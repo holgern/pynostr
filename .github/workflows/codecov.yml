@@ -12,9 +12,9 @@ jobs:
       uses: actions/setup-python@master
       with:
         python-version: 3.7
-    - name: Install requirements 
-       run: | 
-         pip install -r requirements.txt
+    - name: Install requirements 
+      run: | 
+        pip install -r requirements.txt
     - name: 'generate report'
       run: |
         pip install coverage
