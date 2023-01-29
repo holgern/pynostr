@@ -11,7 +11,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@master
       with:
-        python-version: 3.7
+        python-version: 3.9
     - name: 'generate report'
       run: |
         pip install coverage coincurve tlv8 cryptography
