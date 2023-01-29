@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pynostr"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Holger Nahrstaedt", email="nahrstaedt@gmail.com" },
 ]
@@ -22,13 +22,6 @@ classifiers=[
     'Operating System :: POSIX :: Linux',
     'Operating System :: Microsoft :: Windows',
     'Operating System :: MacOS :: MacOS X',
-]
-
-packages = [
-    { include = "pynostr", from = "src" }
-]
-include = [
-    { path = "test", format = "sdist" }
 ]
 
 
