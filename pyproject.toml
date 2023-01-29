@@ -2,9 +2,12 @@
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+py-modules = ["pynostr"]
+
 [project]
 name = "pynostr"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Holger Nahrstaedt", email="nahrstaedt@gmail.com" },
 ]
