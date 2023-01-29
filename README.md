@@ -9,7 +9,13 @@ This library is using coincurve instead of secp256k1, so pynostr can be used on 
 ```bash
 pip install pynostr
 ```
-
+The necessary coincurve can be installed on android inside termux:
+```bash
+pkg update
+pkg install build-essential
+pkg-install binutils
+pip install coincurve --no-binary all
+```
 ## Usage
 **Generate a key**
 ```python
