@@ -1,5 +1,6 @@
 import binascii
 import unittest
+
 import tlv8
 
 from pynostr.bech32 import bech32_decode, bech32_encode
