@@ -19,6 +19,7 @@ dependencies = [
     "coincurve>=1.8.0",
     "cryptography",
     "tlv8",
+    "click"
 ]
 license = {file = "LICENSE"}
 classifiers=[
