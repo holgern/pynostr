@@ -1,4 +1,6 @@
 # pynostr
+[![codecov](https://codecov.io/gh/holgern/pynostr/branch/main/graph/badge.svg?token=jIyk1cnhIx)](https://codecov.io/gh/holgern/pynostr)
+
 Python library for for [Nostr](https://github.com/nostr-protocol/nostr).
 
 This library is using coincurve instead of secp256k1, so pynostr can be used on windows.
