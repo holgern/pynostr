@@ -30,7 +30,7 @@ def convert(npub: str):
 @main.command()
 def version():
     """Shows version."""
-    click.echo(pynostr.__version__)
+    click.echo(pynostr._version.__version__)
 
 
 if __name__ == "__main__":
