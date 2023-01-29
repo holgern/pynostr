@@ -7,7 +7,7 @@ py-modules = ["pynostr"]
 
 [project]
 name = "pynostr"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   { name="Holger Nahrstaedt", email="nahrstaedt@gmail.com" },
 ]
@@ -18,6 +18,7 @@ readme = "README.md"
 requires-python = ">3.7.0"
 dependencies = [
     "coincurve>=1.8.0",
+    "cryptography",
     "tlv8",
 ]
 license = {file = "LICENSE"}
