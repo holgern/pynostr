@@ -3,11 +3,10 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["pynostr"]
+packages = ["pynostr"]
 
 [project]
 name = "pynostr"
-version = "0.0.5"
 authors = [
   { name="Holger Nahrstaedt", email="nahrstaedt@gmail.com" },
 ]
@@ -28,6 +27,13 @@ classifiers=[
     'Operating System :: MacOS :: MacOS X',
 ]
 
+dynamic=["version"]
+
+[tool.setuptools_scm]
+write_to = "pynostr/_version.py"
+
+[project.scripts]
+pynostr = "pynostr.cli:main"
 
 [project.optional-dependencies]
 test = [
