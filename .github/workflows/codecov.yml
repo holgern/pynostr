@@ -14,7 +14,7 @@ jobs:
         python-version: 3.7
     - name: 'generate report'
       run: |
-        pip install coverage coincurve tlv8
+        pip install coverage coincurve tlv8 cryptography
         coverage run -m unittest
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
