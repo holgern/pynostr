@@ -1,0 +1,5 @@
+[run]
+
+omit =
+  # omit all test files
+  */tests/*

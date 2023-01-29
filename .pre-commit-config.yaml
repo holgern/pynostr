@@ -1,0 +1,60 @@
+default_language_version:
+  python: python3
+repos:
+  - repo: https://github.com/psf/black
+    rev: 22.12.0
+    hooks:
+      - id: black
+        exclude: ^(dev/)
+        args: [--skip-string-normalization]
+  - repo: https://github.com/myint/autoflake
+    rev: v2.0.0
+    hooks:
+      - id: autoflake
+        exclude: ^(dev/)
+        args:
+          - --in-place
+          - --ignore-init-module-imports
+          - --remove-all-unused-imports
+          - --remove-duplicate-keys
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: ^(dev/)
+      - id: trailing-whitespace
+        exclude: ^(dev/)
+  - repo: https://github.com/PyCQA/flake8
+    rev: "6.0.0"
+    hooks:
+      - id: flake8
+        name: flake8 except __init__.py
+        exclude: (^(dev/)|/__init__\.py|test_bech32_util\.py$)
+        additional_dependencies: ["flake8-bugbear==23.1.20"]
+        args: [--config, dev/.flake8]
+      - id: flake8
+        exclude: ^(dev/)
+        name: flake8 only __init__.py
+        args: [--config, dev/.flake8, "--extend-ignore=F401"] # ignore unused imports in __init__.py
+        files: /__init__\.py$
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.11.4
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        name: isort except __init__.py
+        exclude: (^(dev/)|/__init__\.py$)
+  - repo: https://github.com/myint/docformatter
+    rev: v1.6.0.rc1
+    hooks:
+      - id: docformatter
+        exclude: ^(dev/)
+        args: ["--in-place", "--wrap-summaries=88"]
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.3.1
+    hooks:
+      - id: pyupgrade
+        exclude: ^(dev/)
+        args: ["--py39-plus"]

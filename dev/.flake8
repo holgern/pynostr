@@ -1,0 +1,7 @@
+[flake8]
+; Use 100 if required in the project
+max-line-length = 88
+; E203 for black
+; B008 does not like fastapi Depends
+; B018: Found useless expression. Either assign it to a variable or remove it.
+extend-ignore = E203,B008,B018
