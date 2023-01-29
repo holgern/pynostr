@@ -6,10 +6,7 @@ from pynostr.key import PrivateKey, PublicKey
 
 @click.group(chain=True)
 def main():
-    """Python CLI for nostr, enjoy.
-
-    :)
-    """
+    """Python CLI for nostr, enjoy."""
 
 
 @main.command()
