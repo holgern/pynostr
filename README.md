@@ -13,7 +13,8 @@ The necessary coincurve can be installed on android inside termux:
 ```bash
 pkg update
 pkg install build-essential
-pkg-install binutils
+pkg install binutils
+pkg install python-cryptography
 pip install coincurve --no-binary all
 ```
 ## Usage
@@ -27,6 +28,29 @@ print(f"Private key: {private_key.bech32()}")
 print(f"Public key: {public_key.bech32()}")
 ```
 
+**Reply to a note**
+```python
+from pynostr.event import Event
+reply = Event(
+  content="Sounds good!",
+)
+# create 'e' tag reference to the note you're replying to
+reply.add_event_ref(original_note_id)
+# create 'p' tag reference to the pubkey you're replying to
+reply.add_pubkey_ref(original_note_author_pubkey)
+reply.sign(private_key.hex())
+```
+
+**Send a DM**
+```python
+from pynostr.event import Event, EventKind
+dm = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
+dm.encrypt_dm(private_key.hex()
+  recipient_pubkey=recipient_pubkey,
+  cleartext_content="Secret message!"
+)
+dm.sign(private_key.hex())
+```
 
 ## Test Suite
 

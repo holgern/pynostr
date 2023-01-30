@@ -1,6 +1,6 @@
 import click
 
-import pynostr
+from pynostr._version import __version__
 from pynostr.key import PrivateKey, PublicKey
 
 
@@ -30,7 +30,7 @@ def convert(npub: str):
 @main.command()
 def version():
     """Shows version."""
-    click.echo(pynostr._version.__version__)
+    click.echo(__version__)
 
 
 if __name__ == "__main__":
