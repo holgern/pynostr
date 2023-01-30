@@ -1,6 +1,4 @@
-"""
-forked from https://github.com/jeffthibault/python-nostr.git
-"""
+"""Forked from https://github.com/jeffthibault/python-nostr.git."""
 import time
 import unittest
 
@@ -81,15 +79,15 @@ class TestEncryptedDirectMessage(unittest.TestCase):
     def test_content_field_not_allowed(self):
         """Should not let users instantiate a new DM with `content` field data."""
         with self.assertRaisesRegex(Exception, "cannot use"):
-            Event(
-                content="My message!", kind=EventKind.ENCRYPTED_DIRECT_MESSAGE
-            )
+            Event(content="My message!", kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
 
     def test_recipient_p_tag(self):
         """Should generate recipient 'p' tag."""
         dm = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
-        dm.encrypt_dm(self.sender_pk.hex(),
-            recipient_pubkey=self.recipient_pubkey, cleartext_content="Secret message!"
+        dm.encrypt_dm(
+            self.sender_pk.hex(),
+            recipient_pubkey=self.recipient_pubkey,
+            cleartext_content="Secret message!",
         )
         assert ['p', self.recipient_pubkey] in dm.tags
 
@@ -103,22 +101,26 @@ class TestEncryptedDirectMessage(unittest.TestCase):
 
         dm1 = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
         self.assertTrue(dm1.content is None)
-        dm1.encrypt_dm(self.sender_pk.hex(),
+        dm1.encrypt_dm(
+            self.sender_pk.hex(),
             recipient_pubkey=self.recipient_pubkey,
             cleartext_content=message1,
         )
         dm2 = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
-        dm2.encrypt_dm(self.recipient_pk.hex(),
+        dm2.encrypt_dm(
+            self.recipient_pk.hex(),
             recipient_pubkey=self.sender_pubkey,
             cleartext_content=message2,
         )
         dm3 = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
-        dm3.encrypt_dm(self.sender_pk.hex(),
+        dm3.encrypt_dm(
+            self.sender_pk.hex(),
             recipient_pubkey=self.recipient_pubkey,
             cleartext_content=message3,
         )
         dm4 = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
-        dm4.encrypt_dm(self.recipient_pk.hex(),
+        dm4.encrypt_dm(
+            self.recipient_pk.hex(),
             recipient_pubkey=self.sender_pubkey,
             cleartext_content=message4,
         )
@@ -209,7 +211,8 @@ class TestEncryptedDirectMessage(unittest.TestCase):
         """`sign` should encrypt a DM that hasn't been encrypted yet."""
         dm = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
         self.assertTrue(dm.content is None)
-        dm.encrypt_dm(self.sender_pk.hex(),
+        dm.encrypt_dm(
+            self.sender_pk.hex(),
             recipient_pubkey=self.recipient_pubkey,
             cleartext_content="Some DM message",
         )

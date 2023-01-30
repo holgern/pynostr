@@ -1,6 +1,4 @@
-"""
-inspired by event.py from https://github.com/jeffthibault/python-nostr.git
-"""
+"""Inspired by event.py from https://github.com/jeffthibault/python-nostr.git."""
 import json
 import time
 from dataclasses import dataclass
@@ -40,9 +38,13 @@ class Event:
         if self.content is not None and not isinstance(self.content, str):
             # DMs initialize content to None but all other kinds should pass in a str
             raise TypeError("Argument 'content' must be of type str")
-        elif self.content is not None and self.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE:
-            raise Exception("Encrypted DMs cannot use the `content` field; use encrypt_dm()"
-                            "for storing an encrypted content.")
+        elif (
+            self.content is not None and self.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE
+        ):
+            raise Exception(
+                "Encrypted DMs cannot use the `content` field; use encrypt_dm()"
+                "for storing an encrypted content."
+            )
         if self.created_at is None:
             self.created_at = int(time.time())
 
