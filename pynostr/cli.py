@@ -1,12 +1,31 @@
+import logging
+
 import click
 
 from pynostr._version import __version__
 from pynostr.key import PrivateKey, PublicKey
 
+log = logging.getLogger(__name__)
+
 
 @click.group(chain=True)
-def main():
+@click.option(
+    '--verbose', '-v', default=3, help='Verbosity (0 = critical to 4 = debug)'
+)
+@click.version_option(version=__version__)
+def main(verbose):
     """Python CLI for nostr, enjoy."""
+    # Logging
+    log = logging.getLogger(__name__)
+    verbosity = ["critical", "error", "warn", "info", "debug"][int(min(verbose, 4))]
+    log.setLevel(getattr(logging, verbosity.upper()))
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    ch = logging.StreamHandler()
+    ch.setLevel(getattr(logging, verbosity.upper()))
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
 
 
 @main.command()
@@ -25,12 +44,6 @@ def convert(npub: str):
     public_key = PublicKey.from_npub(npub)
     click.echo(f"npub: {public_key.bech32()}")
     click.echo(f"hex: {public_key.hex()}")
-
-
-@main.command()
-def version():
-    """Shows version."""
-    click.echo(__version__)
 
 
 if __name__ == "__main__":
