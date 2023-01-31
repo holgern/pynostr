@@ -74,7 +74,7 @@ class Pow:
         elif max_duration > 0 and duration > max_duration:
             return True
         return False
-    
+
     def estimate_hashrate(self, n_guesses: int = 1e4, **operation_kwargs):
         if self.operation is None:
             return 0
@@ -102,10 +102,10 @@ class Pow:
             print(
                 f"Found event with {self.num_leading_zero_bits} "
                 f"zeros after {self.count} tries"
-                
             )
         print(f"avg. hash rate {self.get_hashrate()} guesses per s")
         print(f"Total duration {self.duration} s")
+
 
 @dataclass
 class PowEvent(Pow):
@@ -161,7 +161,7 @@ class PowEvent(Pow):
         self.results.append((self.num_leading_zero_bits, self.event))
         return self.event
 
-    def get_expected_time(self, hashrate = None) -> float:
+    def get_expected_time(self, hashrate=None) -> float:
         if hashrate is None:
             if self.count > 10000 and self.duration > 0:
                 hashrate = self.get_hashrate()
@@ -180,7 +180,7 @@ class PowKey(Pow):
         self.mode = "key"
         self.operation = _guess_key
         self.n_options = 2
-        self.n_pattern = self.difficulty        
+        self.n_pattern = self.difficulty
         self.reset()
 
     def reset(self):
@@ -196,7 +196,6 @@ class PowKey(Pow):
     def increase_difficulty(self):
         self.set_difficulty(self.num_leading_zero_bits + 1)
 
-    
     def mine(self, max_count: int = 0, max_duration: int = 0) -> PrivateKey:
         start = time.perf_counter()
         count = 0
@@ -217,11 +216,11 @@ class PowKey(Pow):
         self.results.append((self.num_leading_zero_bits, self.sk))
         return self.sk
 
-    def get_expected_time(self, hashrate = None) -> float:
+    def get_expected_time(self, hashrate=None) -> float:
         if hashrate is None:
             if self.count > 10000 and self.duration > 0:
                 hashrate = self.get_hashrate()
-            else:        
+            else:
                 hashrate = self.estimate_hashrate()
         self.n_pattern = self.difficulty
         self.n_options = 2
@@ -285,7 +284,7 @@ class PowVanityKey(Pow):
             self.results.append((self.vk, self.sk))
         return self.sk
 
-    def get_expected_time(self, hashrate = None):
+    def get_expected_time(self, hashrate=None):
         if hashrate is None:
             if self.count > 10000 and self.duration > 0:
                 hashrate = self.get_hashrate()
