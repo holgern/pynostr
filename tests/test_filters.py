@@ -1,6 +1,4 @@
-"""
-forked from https://github.com/jeffthibault/python-nostr.git
-"""
+"""Forked from https://github.com/jeffthibault/python-nostr.git."""
 import unittest
 
 from pynostr.event import Event, EventKind
@@ -81,14 +79,16 @@ class TestFilters(unittest.TestCase):
                 kind=EventKind.ENCRYPTED_DIRECT_MESSAGE,
             ),
         ]
-        cls.pk1_pk2_dms[0].encrypt_dm(cls.pk1.hex(),
+        cls.pk1_pk2_dms[0].encrypt_dm(
+            cls.pk1.hex(),
             recipient_pubkey=cls.pk2.public_key.hex(),
             cleartext_content="Hey pk2, here's a secret",
         )
-        cls.pk1_pk2_dms[1].encrypt_dm(cls.pk2.hex(),
+        cls.pk1_pk2_dms[1].encrypt_dm(
+            cls.pk2.hex(),
             recipient_pubkey=cls.pk1.public_key.hex(),
             cleartext_content="Thanks! I'll keep it secure.",
-        )        
+        )
 
     def test_match_by_event_id(self):
         """Should match Events by event_id."""

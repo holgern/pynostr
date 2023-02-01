@@ -15,9 +15,9 @@ class TestRequest(unittest.TestCase):
         id = 123
 
         subscription = Subscription(id=str(id), filtersList=filtersList)
-        
+
         request = Request(subscription.id, filtersList)
-        
+
         request_received = json.loads(request.to_message())
         message_type, subscription_id, req_filters = request_received
         self.assertTrue(isinstance(subscription_id, str))

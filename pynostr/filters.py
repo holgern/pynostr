@@ -1,6 +1,4 @@
-"""
-forked from https://github.com/jeffthibault/python-nostr.git
-"""
+"""Forked from https://github.com/jeffthibault/python-nostr.git."""
 from collections import UserList
 from dataclasses import dataclass
 
