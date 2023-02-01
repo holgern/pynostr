@@ -8,8 +8,7 @@ from coincurve._libsecp256k1 import ffi, lib
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from pynostr.delegation import Delegation
-
+from .delegation import Delegation
 from .bech32 import bech32_decode, bech32_encode
 
 HAS_ECDH = hasattr(lib, 'secp256k1_ecdh')
@@ -17,6 +16,10 @@ HAS_ECDH = hasattr(lib, 'secp256k1_ecdh')
 
 class PublicKey:
     def __init__(self, raw_bytes: bytes) -> None:
+        """
+        :param raw_bytes: The formatted public key.
+        :type data: bytes
+        """
         if isinstance(raw_bytes, PrivateKey):
             self.raw_bytes = raw_bytes.public_key.raw_bytes
         elif isinstance(raw_bytes, secp256k1.keys.PublicKey):
@@ -72,6 +75,11 @@ class PublicKey:
 
 class PrivateKey:
     def __init__(self, raw_secret: bytes = None) -> None:
+        """
+        :param raw_secret: The secret used to initialize the private key.
+                           If not provided or `None`, a new key will be generated.
+        :type raw_secret: bytes
+        """        
         if raw_secret is not None:
             self.raw_secret = raw_secret
         else:
@@ -82,7 +90,10 @@ class PrivateKey:
 
     @classmethod
     def from_nsec(cls, nsec: str):
-        """Load a PrivateKey from its bech32/nsec form."""
+        """Load a PrivateKey from its bech32/nsec form.
+        
+        :param nsec: the nsec key to be imported
+        """
         return cls(bytes(bech32_decode(nsec)))
 
     @classmethod

@@ -2,10 +2,12 @@
 import json
 import time
 from dataclasses import dataclass
+import binascii
 from enum import IntEnum
 from hashlib import sha256
 
 from .key import PrivateKey, PublicKey
+from .bech32 import bech32_decode, bech32_encode
 from .message_type import ClientMessageType
 
 
@@ -26,6 +28,16 @@ class EventKind(IntEnum):
 
 @dataclass
 class Event:
+    """Event class
+    
+    :param content: content string
+    :param pukey: public key in hex form
+    :param created_at: event creation date
+    :param kind: event kind
+    :param tags: list of list of strings
+    :param id: event id, will be computed
+    :param sig: signature, will be created after signing with a private key
+    """
     content: str = None
     pubkey: str = None
     created_at: int = None
@@ -118,7 +130,20 @@ class Event:
         )
         self.content = encrypted_message
 
+    def bech32(self) -> str:
+        """bech32-encoded entities (N-19)
+        
+         :return: note id as bech32 encoding with note prefix
+        """
+        self.compute_id()
+        return bech32_encode(binascii.unhexlify(self.id), "note")
+
     def sign(self, private_key_hex: str) -> None:
+        """signs the event with the private key and stored the signature in self.sig. 
+        The pubkey from the event is replaced and the note id recomputed. 
+        
+        :param private_key_hex: private key as hex string
+        """
         if self.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE and self.content is None:
             raise Exception("Message is not yet encrypted!")
         sk = PrivateKey(bytes.fromhex(private_key_hex))
@@ -152,7 +177,8 @@ class Event:
         )
 
     def __repr__(self):
-        return self.to_message()
+        note_id = self.bech32()
+        return f'Event({note_id[:10]}...{note_id[-10:]})'        
 
     def __str__(self):
         return self.to_message()
