@@ -132,7 +132,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - build-python3.7:
+      - build-python3.7
       - build-python3.8:
           requires:
             - build-python3.7
