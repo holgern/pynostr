@@ -122,7 +122,6 @@ class RelayManager:
         Returns:
             dict: bool of connection statuses
         """
-
         statuses = [relay.is_connected for relay in self.relays.values()]
         return dict(zip(self.relays.keys(), statuses))
 
