@@ -36,7 +36,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            tox
+            python -m tox
 
   build-python3.8:
     docker:
@@ -59,7 +59,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            tox
+            python -m tox
 
   build-python3.9:
     docker:
@@ -82,7 +82,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            tox
+            python -m tox
 
   build-python3.10:
     docker:
@@ -104,7 +104,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            tox
+            python -m tox
 
   build-python3.11:
     docker:
@@ -126,7 +126,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            tox
+            python -m tox
 
 workflows:
   version: 2
