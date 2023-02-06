@@ -63,6 +63,18 @@ class TestEvent(unittest.TestCase):
         # PrivateKey.sign() should have populated public_key
         self.assertEqual(event.pubkey, self.sender_pubkey)
 
+    def test_dict_roundtrip(self):
+        """Conversion to dict and back result in same object."""
+        event = Event(
+            content='test event',
+            created_at=12345678,
+            kind=1,
+        )
+        event.add_pubkey_ref("some_pubkey")
+
+        got = Event.from_dict(event.to_dict())
+        self.assertEqual(got, event)
+
 
 class TestEncryptedDirectMessage(unittest.TestCase):
     @classmethod
@@ -239,7 +251,7 @@ class TestEncryptedDirectMessage(unittest.TestCase):
         self.assertEqual(shared_secret1, shared_secret2)
 
     def test_decrypt_event(self):
-        dm1 = Event.from_json(
+        dm1 = Event.from_dict(
             {
                 "id": "46c76ec67d03babdb840254b3667585143cc499497b0a6a40aedc9ce2de416"
                 "70",

@@ -2,6 +2,7 @@ import base64
 import binascii
 import secrets
 from hashlib import sha256
+from typing import Optional
 
 import coincurve as secp256k1
 from coincurve._libsecp256k1 import ffi, lib
@@ -74,7 +75,7 @@ class PublicKey:
 
 
 class PrivateKey:
-    def __init__(self, raw_secret: bytes = None) -> None:
+    def __init__(self, raw_secret: Optional[bytes] = None) -> None:
         """
         :param raw_secret: The secret used to initialize the private key.
                            If not provided or `None`, a new key will be generated.

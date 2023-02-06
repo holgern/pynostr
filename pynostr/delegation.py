@@ -1,6 +1,7 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
 import time
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -9,7 +10,7 @@ class Delegation:
     delegatee_pubkey: str
     event_kind: int
     duration_secs: int = 30 * 24 * 60  # default to 30 days
-    signature: str = None  # set in PrivateKey.sign_delegation
+    signature: Optional[str] = None  # set in PrivateKey.sign_delegation
 
     @property
     def expires(self) -> int:

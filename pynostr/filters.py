@@ -1,6 +1,8 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+import json
 from collections import UserList
 from dataclasses import dataclass
+from typing import Optional
 
 from .event import Event, EventKind
 
@@ -19,19 +21,18 @@ class Filters:
     Filters(hashtag_refs=[hashtags])
     """
 
-    ids: list[str] = None
-    authors: list[str] = None
-    kinds: list[EventKind] = None
-    event_refs: list[
-        str
+    ids: Optional[list[str]] = None
+    kinds: Optional[list[EventKind]] = None
+    authors: Optional[list[str]] = None
+    since: Optional[int] = None
+    until: Optional[int] = None
+    event_refs: Optional[
+        list[str]
     ] = None  # the "#e" attr; list of event ids referenced in an "e" tag
-    pubkey_refs: list[
-        str
+    pubkey_refs: Optional[
+        list[str]
     ] = None  # The "#p" attr; list of pubkeys referenced in a "p" tag
-
-    since: int = None
-    until: int = None
-    limit: int = None
+    limit: Optional[int] = None
 
     def __post_init__(self):
         self.tags = {}
@@ -136,6 +137,12 @@ class Filters:
             res.update(self.tags)
         return res
 
+    def __repr__(self):
+        return f'Filters({self.to_json_object()})'
+
+    def __str__(self):
+        return json.dumps(self.to_json_object())
+
 
 class FiltersList(UserList):
     def __init__(self, initlist: list[Filters] = None) -> None:
@@ -150,3 +157,9 @@ class FiltersList(UserList):
 
     def to_json_array(self) -> list:
         return [filters.to_json_object() for filters in self.data]
+
+    def __repr__(self):
+        return f'FilterList({self.to_json_array()})'
+
+    def __str__(self):
+        return json.dumps(self.to_json_array())

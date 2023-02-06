@@ -1,10 +1,12 @@
 """Inspired by event.py from https://github.com/jeffthibault/python-nostr.git."""
 import binascii
+import datetime
 import json
 import time
 from dataclasses import dataclass
 from enum import IntEnum
 from hashlib import sha256
+from typing import Optional
 
 from .bech32 import bech32_encode
 from .key import PrivateKey, PublicKey
@@ -39,20 +41,22 @@ class Event:
     :param sig: signature, will be created after signing with a private key
     """
 
-    content: str = None
-    pubkey: str = None
-    created_at: int = None
-    kind: int = EventKind.TEXT_NOTE
+    content: Optional[str] = None
+    pubkey: Optional[str] = None
+    created_at: Optional[int] = None
+    kind: Optional[int] = EventKind.TEXT_NOTE
     tags: list[list[str]] = None
-    id: str = None
-    sig: str = None
+    id: Optional[str] = None
+    sig: Optional[str] = None
 
     def __post_init__(self):
         if self.content is not None and not isinstance(self.content, str):
             # DMs initialize content to None but all other kinds should pass in a str
             raise TypeError("Argument 'content' must be of type str")
         elif (
-            self.content is not None and self.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE
+            self.content is not None
+            and "?iv" not in self.content
+            and self.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE
         ):
             raise Exception(
                 "Encrypted DMs cannot use the `content` field; use encrypt_dm()"
@@ -76,24 +80,16 @@ class Event:
         self.id = sha256(self.serialize()).hexdigest()
 
     @classmethod
-    def from_json(cls, event):
-        if "content" in event:
-            ret = cls(event["content"])
-        else:
-            ret = cls("")
-        if "id" in event:
-            ret.id = event["id"]
-        if "pubkey" in event:
-            ret.pubkey = event["pubkey"]
-        if "created_at" in event:
-            ret.created_at = event["created_at"]
-        if "kind" in event:
-            ret.kind = event["kind"]
-        if "tags" in event:
-            ret.tags = event["tags"]
-        if "sig" in event:
-            ret.sig = event["sig"]
-        return ret
+    def from_dict(cls, msg: dict) -> 'Event':
+        # "id" is ignore, as it will be computed from the contents
+        return Event(
+            content=msg['content'],
+            pubkey=msg['pubkey'],
+            created_at=msg['created_at'],
+            kind=msg['kind'],
+            tags=msg['tags'],
+            sig=msg['sig'],
+        )
 
     def add_pubkey_ref(self, pubkey: str):
         """Adds a reference to a pubkey as a 'p' tag."""
@@ -158,7 +154,10 @@ class Event:
         self.compute_id()
         return pub_key.verify(bytes.fromhex(self.sig), bytes.fromhex(self.id))
 
-    def to_json(self) -> dict:
+    def date_time(self):
+        return datetime.datetime.utcfromtimestamp(self.created_at)
+
+    def to_dict(self) -> dict:
         return {
             "id": self.id,
             "pubkey": self.pubkey,
@@ -173,7 +172,7 @@ class Event:
         return json.dumps(
             [
                 ClientMessageType.EVENT,
-                self.to_json(),
+                self.to_dict(),
             ]
         )
 
