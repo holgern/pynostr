@@ -1,5 +1,11 @@
 # pynostr
-[![codecov](https://codecov.io/gh/holgern/pynostr/branch/main/graph/badge.svg?token=jIyk1cnhIx)](https://codecov.io/gh/holgern/pynostr)
+
+| | |
+| --- | --- |
+| CI/CD | [![codecov](https://codecov.io/gh/holgern/pynostr/branch/main/graph/badge.svg?token=jIyk1cnhIx)](https://codecov.io/gh/holgern/pynostr) [![CircleCI](https://dl.circleci.com/status-badge/img/gh/holgern/pynostr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/holgern/pynostr/tree/main) |
+| Package | [![PyPI - Version](https://img.shields.io/pypi/v/pynostr.svg?logo=pypi&label=PyPI&logoColor=gold)](https://pypi.org/project/pynostr/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/pynostr.svg?color=blue&label=Downloads&logo=pypi&logoColor=gold)](https://pypi.org/project/pynostr/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pynostr.svg?logo=python&label=Python&logoColor=gold)](https://pypi.org/project/pynostr/) |
+
+-----
 
 Python library for for [Nostr](https://github.com/nostr-protocol/nostr).
 

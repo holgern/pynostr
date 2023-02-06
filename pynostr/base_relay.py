@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from threading import Lock
-from typing import Dict
 
 from .message_pool import MessagePool
 from .subscription import Subscription
@@ -11,7 +10,7 @@ class RelayPolicy:
     should_read: bool = True
     should_write: bool = True
 
-    def to_json_object(self) -> Dict[str, bool]:
+    def to_json_object(self) -> dict[str, bool]:
         return {"read": self.should_read, "write": self.should_write}
 
 
