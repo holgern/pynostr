@@ -1,5 +1,5 @@
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .event import Event
 from .key import PrivateKey
@@ -110,7 +110,7 @@ class Pow:
 @dataclass
 class PowEvent(Pow):
     difficulty: int = 8
-    event: Event = Event()
+    event: Event = field(default_factory=Event)
 
     def __post_init__(self):
         self.mode = "event"
