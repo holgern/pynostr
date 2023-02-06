@@ -145,9 +145,9 @@ class Filters:
 
 
 class FiltersList(UserList):
-    def __init__(self, initlist: list[Filters] = None) -> None:
+    def __init__(self, initlist: List[Filters] = None) -> None:
         super().__init__(initlist)
-        self.data: list[Filters]
+        self.data: List[Filters]
 
     def match(self, event: Event):
         for filters in self.data:
