@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from enum import IntEnum
 from hashlib import sha256
-from typing import Optional
+from typing import Optional, List
 
 from .bech32 import bech32_encode
 from .key import PrivateKey, PublicKey
@@ -45,7 +45,7 @@ class Event:
     pubkey: Optional[str] = None
     created_at: Optional[int] = None
     kind: Optional[int] = EventKind.TEXT_NOTE
-    tags: list[list[str]] = None
+    tags: List[List[str]] = None
     id: Optional[str] = None
     sig: Optional[str] = None
 

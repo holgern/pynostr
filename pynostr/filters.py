@@ -2,7 +2,7 @@
 import json
 from collections import UserList
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from .event import Event, EventKind
 
@@ -21,16 +21,16 @@ class Filters:
     Filters(hashtag_refs=[hashtags])
     """
 
-    ids: Optional[list[str]] = None
-    kinds: Optional[list[EventKind]] = None
-    authors: Optional[list[str]] = None
+    ids: Optional[List[str]] = None
+    kinds: Optional[List[EventKind]] = None
+    authors: Optional[List[str]] = None
     since: Optional[int] = None
     until: Optional[int] = None
     event_refs: Optional[
-        list[str]
+        List[str]
     ] = None  # the "#e" attr; list of event ids referenced in an "e" tag
     pubkey_refs: Optional[
-        list[str]
+        List[str]
     ] = None  # The "#p" attr; list of pubkeys referenced in a "p" tag
     limit: Optional[int] = None
 
