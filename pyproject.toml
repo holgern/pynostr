@@ -37,8 +37,13 @@ write_to = "pynostr/_version.py"
 [project.scripts]
 pynostr = "pynostr.cli:main"
 
-[project.optional-dependencies]
-test = [
-  "pytest >=7.2.0",
-  "pytest-cov[all]"
-]
+[tool.tox]
+legacy_tox_ini = """
+
+[testenv]
+deps =
+    pytest
+    pytest-cov[all]
+commands =
+    pytest
+"""

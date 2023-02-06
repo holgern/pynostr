@@ -142,6 +142,19 @@ Run a specific test:
 pytest test/test_this_file.py::test_this_specific_test
 ```
 
+### Running tests with tox
+
+Install tox
+
+```
+pip install tox
+```
+
+Run tests
+
+```
+tox
+```
 
 ## Pre-commit-config
 
