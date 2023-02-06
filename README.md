@@ -5,6 +5,7 @@ Python library for for [Nostr](https://github.com/nostr-protocol/nostr).
 
 This library is using coincurve instead of secp256k1, so pynostr can be used on windows and is a fork from [python-nostr](https://github.com/jeffthibault/python-nostr).
 
+This library works with python >= 3.8
 
 ## Installation
 ```bash
