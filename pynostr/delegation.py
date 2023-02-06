@@ -24,7 +24,7 @@ class Delegation:
     def delegation_token(self) -> str:
         return f"nostr:delegation:{self.delegatee_pubkey}:{self.conditions}"
 
-    def get_tag(self) -> list[str]:
+    def get_tag(self) -> list:
         """Called by Event."""
         return [
             "delegation",

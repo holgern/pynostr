@@ -7,7 +7,7 @@ version: 2
 jobs:
   build-python3.8:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
     working_directory: ~/repo
     steps:
       - checkout
@@ -30,7 +30,7 @@ jobs:
 
   build-python3.9:
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
     working_directory: ~/repo
     steps:
       - checkout
@@ -53,7 +53,7 @@ jobs:
 
   build-python3.10:
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
     working_directory: ~/repo
     steps:
       - checkout
@@ -75,7 +75,7 @@ jobs:
 
   build-python3.11:
     docker:
-      - image: circleci/python:3.11
+      - image: cimg/python:3.11
     working_directory: ~/repo
     steps:
       - checkout
