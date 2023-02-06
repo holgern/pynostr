@@ -57,4 +57,4 @@ repos:
     hooks:
       - id: pyupgrade
         exclude: ^(dev/)
-        args: ["--py39-plus"]
+        args: ["--py37-plus"]
