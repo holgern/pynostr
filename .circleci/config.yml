@@ -30,8 +30,8 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo python -m pip install --upgrade pip
-            sudo python -m pip install -r test-requirements.txt
+            python -m pip install --upgrade pip
+            python -m pip install -r test-requirements.txt
 
       - run:
           name: run tests
@@ -53,8 +53,8 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo python -m pip install --upgrade pip
-            sudo python -m pip install --upgrade -r test-requirements.txt
+            python -m pip install --upgrade pip
+            python -m pip install --upgrade -r test-requirements.txt
 
       - run:
           name: run tests
@@ -76,8 +76,8 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo python -m pip install --upgrade pip
-            sudo python -m pip install --upgrade -r test-requirements.txt
+            python -m pip install --upgrade pip
+            python -m pip install --upgrade -r test-requirements.txt
 
       - run:
           name: run tests
@@ -99,8 +99,8 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo python -m pip install --upgrade pip
-            sudo python -m pip install --upgrade -r test-requirements.txt
+            python -m pip install --upgrade pip
+            python -m pip install --upgrade -r test-requirements.txt
       - run:
           name: run tests
           command: |
@@ -121,8 +121,8 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo python -m pip install --upgrade pip
-            sudo python -m pip install --upgrade -r test-requirements.txt
+            python -m pip install --upgrade pip
+            python -m pip install --upgrade -r test-requirements.txt
       - run:
           name: run tests
           command: |
