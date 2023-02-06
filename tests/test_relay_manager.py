@@ -36,17 +36,18 @@ class TestPrivateKey(unittest.TestCase):
         """make sure that subscription dictionary default is not the same object across
         all relays so that subscriptions can vary."""
         # initiate relay manager with two relays
-        relay_manager = RelayManager()
-        relay_manager.add_relay(url='fake-relay1')
-        relay_manager.add_relay(url='fake-relay2')
+        relay_manager = RelayManager(error_threshold=1)
+        relay_manager.add_relay(url='ws://fake-relay1')
+        relay_manager.add_relay(url='ws://fake-relay2')
 
         # make test subscription and add to one relay
         test_subscription = Subscription('test', FiltersList())
-        relay_manager.relays['fake-relay1'].subscriptions.update(
+        relay_manager.relays['ws://fake-relay1'].subscriptions.update(
             {test_subscription.id: test_subscription}
         )
         # make sure test subscription isn't in second relay subscriptions
         self.assertTrue(
             test_subscription.id
-            not in relay_manager.relays['fake-relay2'].subscriptions.keys()
+            not in relay_manager.relays['ws://fake-relay2'].subscriptions.keys()
         )
+        relay_manager.close_all_relay_connections()

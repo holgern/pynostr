@@ -19,6 +19,8 @@ class RelayException(Exception):
 
 @dataclass
 class RelayManager:
+    error_threshold: int = 0
+
     def __post_init__(self):
         self.relays: dict[str, Relay] = {}
         self.message_pool: MessagePool = MessagePool()
@@ -33,6 +35,8 @@ class RelayManager:
     ):
 
         relay = Relay(url, self.message_pool, policy, ssl_options, proxy_config)
+        if self.error_threshold:
+            relay.error_threshold = self.error_threshold
 
         with self.lock:
             self.relays[url] = relay
