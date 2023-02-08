@@ -13,17 +13,26 @@ class EventMessage:
         self.subscription_id = subscription_id
         self.url = url
 
+    def __repr__(self):
+        return f'Event({self.url}: {str(self.event)})'
+
 
 class NoticeMessage:
     def __init__(self, content: str, url: str) -> None:
         self.content = content
         self.url = url
 
+    def __repr__(self):
+        return f'Notice({self.url}: {self.content})'
+
 
 class EndOfStoredEventsMessage:
     def __init__(self, subscription_id: str, url: str) -> None:
         self.subscription_id = subscription_id
         self.url = url
+
+    def __repr__(self):
+        return f'EOSE({self.url})'
 
 
 class MessagePool:
@@ -37,6 +46,16 @@ class MessagePool:
 
     def add_message(self, message: str, url: str):
         self._process_message(message, url)
+
+    def get_all(self):
+        results = {"events": [], "notices": [], "eose": []}
+        while self.has_events():
+            results["events"].append(self.get_event())
+        while self.has_notices():
+            results["notices"].append(self.get_notice())
+        while self.has_eose_notices():
+            results["eose"].append(self.get_eose_notice())
+        return results
 
     def get_event(self):
         return self.events.get()
@@ -75,3 +94,9 @@ class MessagePool:
             self.notices.put(NoticeMessage(message_json[1], url))
         elif message_type == RelayMessageType.END_OF_STORED_EVENTS:
             self.eose_notices.put(EndOfStoredEventsMessage(message_json[1], url))
+
+    def __repr__(self):
+        return (
+            f'Pool(events({self.events.qsize()}) notices({self.notices.qsize()}) '
+            f'eose({self.eose_notices.qsize()}))'
+        )

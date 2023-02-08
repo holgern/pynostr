@@ -26,6 +26,7 @@ class EventKind(IntEnum):
     CHANNEL_MESSAGE = 42
     CHANNEL_HIDE = 43
     CHANNEL_MUTE = 44
+    RELAY_LIST_METADATA = 10002
 
 
 @dataclass
