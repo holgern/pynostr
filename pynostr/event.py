@@ -109,10 +109,43 @@ class Event:
         self.compute_id()
 
     def has_event_ref(self, event_id: str):
+        """Check if a e tag to the given event_id exists."""
         for tag_type, tag in self.tags:
             if tag_type == 'e' and tag == event_id:
                 return True
         return False
+
+    def get_tag_dict(self):
+        """Returns all tags as dict."""
+        ret = {}
+        tag_types = self.get_tag_types()
+        for t in tag_types:
+            ret[t] = self.get_tag_list(tag_type=t)
+        return ret
+
+    def get_tag_list(self, tag_type: str = 'e'):
+        """Returns all tags of given type as list."""
+        ret = []
+        for _tag_type, _tag in self.tags:
+            if _tag_type == tag_type:
+                ret.append(_tag)
+        return ret
+
+    def get_tag_types(self):
+        """Returns list of all included tag types."""
+        ret = []
+        for tag_type, _ in self.tags:
+            if tag_type not in ret:
+                ret.append(tag_type)
+        return ret
+
+    def get_tag_count(self, tag_type: str = 'e'):
+        """Returns all tags of given type as list."""
+        count = 0
+        for _tag_type, _tag in self.tags:
+            if _tag_type == tag_type:
+                count += 1
+        return count
 
     def encrypt_dm(
         self, private_key_hex: str, cleartext_content: str, recipient_pubkey: str

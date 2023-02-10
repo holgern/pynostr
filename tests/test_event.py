@@ -37,6 +37,12 @@ class TestEvent(unittest.TestCase):
         event = Event(content="Adding an 'e' tag")
         event.add_event_ref(some_event_id)
         self.assertTrue(['e', some_event_id] in event.tags)
+        self.assertEqual(event.get_tag_count('e'), 1)
+        self.assertEqual(event.get_tag_count('p'), 0)
+        self.assertEqual(event.get_tag_list('e'), [some_event_id])
+        self.assertEqual(event.get_tag_list('p'), [])
+        self.assertEqual(event.get_tag_types(), ['e'])
+        self.assertEqual(event.get_tag_dict(), {"e": [some_event_id]})
         self.assertTrue(event.has_event_ref(some_event_id))
 
     def test_add_pubkey_ref(self):
@@ -44,6 +50,12 @@ class TestEvent(unittest.TestCase):
         event = Event(content="Adding a 'p' tag")
         event.add_pubkey_ref(some_pubkey)
         self.assertTrue(['p', some_pubkey] in event.tags)
+        self.assertEqual(event.get_tag_count('p'), 1)
+        self.assertEqual(event.get_tag_count('e'), 0)
+        self.assertEqual(event.get_tag_list('p'), [some_pubkey])
+        self.assertEqual(event.get_tag_list('e'), [])
+        self.assertEqual(event.get_tag_types(), ['p'])
+        self.assertEqual(event.get_tag_dict(), {"p": [some_pubkey]})
         self.assertTrue(event.has_pubkey_ref(some_pubkey))
 
     def test_sign_event_is_valid(self):
