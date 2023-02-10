@@ -1,5 +1,6 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
 import json
+from dataclasses import dataclass
 from queue import Queue
 from threading import Lock
 
@@ -7,29 +8,29 @@ from .event import Event
 from .message_type import RelayMessageType
 
 
+@dataclass
 class EventMessage:
-    def __init__(self, event: Event, subscription_id: str, url: str) -> None:
-        self.event = event
-        self.subscription_id = subscription_id
-        self.url = url
+    event: str
+    subscription_id: str
+    url: str
 
     def __repr__(self):
-        return f'Event({self.url}: {str(self.event)})'
+        return f'EventMessage({self.url}: kind {str(self.event.kind)})'
 
 
+@dataclass
 class NoticeMessage:
-    def __init__(self, content: str, url: str) -> None:
-        self.content = content
-        self.url = url
+    content: str
+    url: str
 
     def __repr__(self):
         return f'Notice({self.url}: {self.content})'
 
 
+@dataclass
 class EndOfStoredEventsMessage:
-    def __init__(self, subscription_id: str, url: str) -> None:
-        self.subscription_id = subscription_id
-        self.url = url
+    subscription_id: str
+    url: str
 
     def __repr__(self):
         return f'EOSE({self.url})'
