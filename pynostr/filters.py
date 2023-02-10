@@ -156,6 +156,7 @@ class FiltersList(UserList):
         return False
 
     def to_json_array(self) -> list:
+        """Convert the data of the object to a json array."""
         return [filters.to_json_object() for filters in self.data]
 
     def __repr__(self):
