@@ -10,7 +10,6 @@ from .event import Event
 from .filters import FiltersList
 from .message_pool import MessagePool
 from .relay import Relay
-from .request import Request
 
 
 class RelayException(Exception):
@@ -67,8 +66,7 @@ class RelayManager:
                         f"is not configured to read from"
                     )
                 relay.add_subscription(id, filters)
-                request = Request(id, filters)
-                relay.publish(request.to_message())
+                relay.publish(relay.request)
             else:
                 raise RelayException(f"Invalid relay url: no connection to {url}")
 
@@ -77,8 +75,7 @@ class RelayManager:
             for relay in self.relays.values():
                 if relay.policy.should_read:
                     relay.add_subscription(id, filters)
-                    request = Request(id, filters)
-                    relay.publish(request.to_message())
+                    relay.publish(relay.request)
 
     def close_subscription_on_relay(self, url: str, id: str):
         with self.lock:

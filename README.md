@@ -60,6 +60,43 @@ while relay_manager.message_pool.has_events():
 relay_manager.close_all_relay_connections()
 ```
 
+**Connect to relays using tornado**
+```python
+from pynostr.tornado_relay import TornadoRelay
+from pynostr.filters import FiltersList, Filters
+from pynostr.event import EventKind
+from pynostr.base_relay import RelayPolicy
+from pynostr.message_pool import MessagePool
+import tornado.ioloop
+import time
+import uuid
+
+message_pool = MessagePool(first_response_only=False)
+policy = RelayPolicy()
+io_loop = tornado.ioloop.IOLoop.current()
+r = TornadoRelay(
+    "wss://nostr-pub.wellorder.net",
+    message_pool,
+    io_loop,
+    policy
+)
+filters = FiltersList([Filters(kinds=[EventKind.TEXT_NOTE], limit=100)])
+subscription_id = uuid.uuid1().hex
+
+r.add_subscription(subscription_id, filters)
+io_loop.add_callback(r.start)
+io_loop.start()
+
+time.sleep(1.25)
+while message_pool.has_notices():
+    notice_msg = message_pool.get_notice()
+    print(notice_msg.content)
+while message_pool.has_events():
+    event_msg = message_pool.get_event()
+    print(event_msg.event.content)
+```
+
+
 **Publish to relays**
 ```python
 import json

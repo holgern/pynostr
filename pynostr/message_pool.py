@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from queue import Queue
 from threading import Lock
+from typing import List, Optional
 
 from .event import Event
 from .message_type import RelayMessageType
@@ -101,3 +102,36 @@ class MessagePool:
             f'Pool(events({self.events.qsize()}) notices({self.notices.qsize()}) '
             f'eose({self.eose_notices.qsize()}))'
         )
+
+
+@dataclass
+class EventMessageStore:
+    eventMessages: Optional[List[EventMessage]] = None
+
+    def add_event(self, event):
+        if self.eventMessages is None:
+            self.eventMessages = []
+        if isinstance(event, list):
+            self.eventMessages += event
+        else:
+            self.eventMessages.append(event)
+
+    def get_newest_event(self):
+        if not self.eventMessages:
+            return None
+        return max(self.eventMessages, key=lambda x: x.event.date_time())
+
+    def get_events_by_url(self, url):
+        return [event for event in self.eventMessages if event.url == url]
+
+    def get_events_by_id(self, subscription_id):
+        return [
+            event
+            for event in self.eventMessages
+            if event.subscription_id == subscription_id
+        ]
+
+    def __repr__(self):
+        if not self.eventMessages:
+            return 'EventMessageStore()'
+        return f'EventMessageStore({len(self.eventMessages)} events)'

@@ -38,6 +38,9 @@ classifiers=[
 
 dynamic=["version"]
 
+[project.optional-dependencies]
+tornado = ["tornado"]
+
 [tool.setuptools_scm]
 write_to = "pynostr/_version.py"
 
