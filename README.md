@@ -17,6 +17,10 @@ This library works with python >= 3.7
 ```bash
 pip install pynostr
 ```
+with tornado support
+```bash
+pip install pynostr[tornado]
+```
 The necessary coincurve can be installed on android inside termux:
 ```bash
 pkg update
