@@ -3,7 +3,7 @@ from typing import Union
 
 from tornado import gen
 from tornado.ioloop import IOLoop
-from tornado.websocket import websocket_connect
+from tornado.websocket import WebSocketError, websocket_connect
 
 from .base_relay import BaseRelay, RelayPolicy, RelayProxyConnectionConfig
 from .message_pool import MessagePool
@@ -22,51 +22,83 @@ class TornadoRelay(BaseRelay):
     ) -> None:
         super().__init__(url, message_pool, policy, ssl_options, proxy_config)
         self.io_loop = io_loop
+        self.running = True
 
     @property
     def is_connected(self) -> bool:
         return self.ws is not None
 
     @gen.coroutine
-    def connect(self):
-        yield websocket_connect(
-            self.url,
-            callback=self.maybe_retry_connection,
-            on_message_callback=self.on_message,
-            ping_interval=60,
-            ping_timeout=120,
-        )
-
-    def maybe_retry_connection(self, future) -> None:
+    def connect(self, timeout=2):
         try:
-            self.ws = future.result()
+            if timeout > 0:
+                self.ws = yield gen.with_timeout(
+                    self.io_loop.time() + 2,
+                    websocket_connect(
+                        self.url,
+                        ping_interval=60,
+                        ping_timeout=120,
+                    ),
+                )
+            else:
+                self.ws = yield websocket_connect(
+                    self.url,
+                    ping_interval=60,
+                    ping_timeout=120,
+                )
+            # yield self.ws.write_message(self.request)
             self.publish(self.request)
-        except Exception:
-            print("Could not reconnect, retrying in 3 seconds...")
-            self.io_loop.call_later(3, self.connect)
+            # self.io_loop.call_later(1, self.send_message, self.request)
+            while True:
+                message = yield self.ws.read_message()
+                if message is None:
+                    break
+                if not self.on_message(message):
+                    break
+
+        except gen.TimeoutError:
+            print("Timeout connecting to", self.url)
+            return
+        except WebSocketError as e:
+            print(f"Error connecting to WebSocket server at {self.url}: {e}")
+            return
+        except Exception as e:
+            print(f"Error connecting to {self.url}: {e}")
+            return
+        # print(self.request)
+        # self.publish(self.request)
+
+        # print(f"WebSocket connection to {self.url} closed")
 
     def on_message(self, message):
-        if message is None:
-            self.connect()
-        else:
-            if self._is_valid_message(message):
-                message_json = json.loads(message)
-                message_type = message_json[0]
-                if message_type == RelayMessageType.EVENT:
-                    # event = Event.from_dict(message_json[2])
-                    # print(event.to_message())
-                    self.message_pool.add_message(message, self.url)
-                elif message_type == RelayMessageType.END_OF_STORED_EVENTS:
-                    self.close()
+        if self._is_valid_message(message):
+            message_json = json.loads(message)
+            message_type = message_json[0]
+            if message_type == RelayMessageType.EVENT:
+                # event = Event.from_dict(message_json[2])
+                # print(event.to_message())
+                self.message_pool.add_message(message, self.url)
+            elif message_type == RelayMessageType.END_OF_STORED_EVENTS:
+                self.close()
+                self.message_pool.add_message(message, self.url)
+                return False
+        return True
+        # yield None
 
+    @gen.coroutine
     def start(self):
-        self.connect()
+        yield self.connect()
 
+    @gen.coroutine
     def close(self):
         if self.ws is not None:
-            self.ws.close()
-            self.io_loop.stop()
+            yield self.ws.close()
+            # self.io_loop.stop()
 
+    @gen.coroutine
     def publish(self, message: str):
         # print(message)
-        self.ws.write_message(message)
+        yield self.ws.write_message(message)
+
+    def send_message(self, message):
+        gen.maybe_future(self.ws.write_message(message))

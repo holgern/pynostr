@@ -7,13 +7,10 @@ from threading import Lock
 
 from .base_relay import RelayPolicy, RelayProxyConnectionConfig
 from .event import Event
+from .exception import RelayException
 from .filters import FiltersList
 from .message_pool import MessagePool
 from .relay import Relay
-
-
-class RelayException(Exception):
-    pass
 
 
 @dataclass

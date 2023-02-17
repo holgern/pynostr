@@ -21,9 +21,12 @@ def keygen():
 
 
 @app.command()
-def convert(npub: str):
+def convert(identifier: str):
     """Converts npub key to hex."""
-    public_key = PublicKey.from_npub(npub)
+    if "npub" in identifier:
+        public_key = PublicKey.from_npub(identifier)
+    else:
+        public_key = PublicKey.from_hex(identifier)
     click.echo(f"npub: {public_key.bech32()}")
     click.echo(f"hex: {public_key.hex()}")
 
