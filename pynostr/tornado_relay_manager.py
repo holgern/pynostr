@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from dataclasses import dataclass
 
@@ -12,10 +13,12 @@ from .filters import FiltersList
 from .message_pool import MessagePool
 from .tornado_relay import TornadoRelay
 
+log = logging.getLogger(__name__)
+
 
 @dataclass
 class TornadoRelayManager:
-    error_threshold: int = 0
+    error_threshold: int = 3
 
     def __post_init__(self):
         self.relays: dict[str, TornadoRelay] = {}
@@ -23,12 +26,12 @@ class TornadoRelayManager:
         self.io_loop: IOLoop = IOLoop.current()
 
     def add_relay(
-        self,
-        url: str,
-        policy: RelayPolicy = RelayPolicy(),
+        self, url: str, policy: RelayPolicy = RelayPolicy(), close_on_eose: bool = True
     ):
 
-        relay = TornadoRelay(url, self.message_pool, self.io_loop, policy)
+        relay = TornadoRelay(
+            url, self.message_pool, self.io_loop, policy, close_on_eose=close_on_eose
+        )
         if self.error_threshold:
             relay.error_threshold = self.error_threshold
 
@@ -42,7 +45,7 @@ class TornadoRelayManager:
     def remove_closed_relays(self):
         for url, connected in self.connection_statuses.items():
             if not connected:
-                # warnings.warn(f'{url} is not connected... removing relay.')
+                log.info(f'{url} is not connected... removing relay.')
                 self.remove_relay(url=url)
 
     def add_subscription_on_relay(self, url: str, id: str, filters: FiltersList):
@@ -53,41 +56,42 @@ class TornadoRelayManager:
                     f"Could not send request: {url} " f"is not configured to read from"
                 )
             relay.add_subscription(id, filters)
-            try:
-                self.io_loop.run_sync(relay.connect)
-            except gen.Return:
-                pass
-            # relay.publish(relay.request)
-        else:
-            raise RelayException(f"Invalid relay url: no connection to {url}")
 
     @gen.coroutine
-    def prepare_relays(self, id: str, filters: FiltersList):
+    def prepare_relays(self, timeout: int = 2):
         futures = []
         relays = []
         for relay in self.relays.values():
             if relay.policy.should_read:
-                relay.add_subscription(id, filters)
                 # yield relay.connect()
                 relays.append(relay)
-                future = gen.with_timeout(
-                    self.io_loop.time() + 2, relay.connect(timeout=0)
-                )
-                futures.append(future)
+                if timeout > 0:
+                    future = gen.with_timeout(
+                        self.io_loop.time() + timeout, relay.connect(timeout=0)
+                    )
+                    futures.append(future)
+                else:
+                    futures.append(relay.connect(timeout=0))
 
-        for i, future in enumerate(futures):
-            try:
-                yield future
-            except gen.TimeoutError:
-                print(f"Connection to WebSocket client {relays[i].url} timed out")
-
+        if timeout > 0:
+            for i, future in enumerate(futures):
+                try:
+                    yield future
+                except gen.TimeoutError:
+                    log.warning(
+                        f"Connection to WebSocket client {relays[i].url} timed out"
+                    )
+        else:
+            yield gen.multi(futures)
         raise gen.Return(relays)
 
     def add_subscription_on_all_relays(self, id: str, filters: FiltersList):
-        self.io_loop.run_sync(lambda: self.prepare_relays(id, filters))
+        for relay in self.relays.values():
+            if relay.policy.should_read:
+                relay.add_subscription(id, filters)
 
-        # self.io_loop.stop()
-        # relay.publish(relay.request)
+    def run_sync(self, timeout: int = 2):
+        self.io_loop.run_sync(lambda: self.prepare_relays(timeout))
 
     def close_subscription_on_relay(self, url: str, id: str):
         if url in self.relays:
@@ -114,15 +118,12 @@ class TornadoRelayManager:
                 self.io_loop.start()
         time.sleep(2)
         self.remove_closed_relays()
-        assert all(self.connection_statuses.values())
-        self._is_connected = True
 
     def close_connections(self):
         for relay in self.relays.values():
             relay.close()
 
-        assert not any(self.connection_statuses.values())
-        self._is_connected = False
+        return any(self.connection_statuses.values())
 
     @property
     def connection_statuses(self) -> dict:
@@ -149,3 +150,10 @@ class TornadoRelayManager:
             )
 
         self.publish_message(event.to_message())
+
+    def get_relay_information(self):
+        ret = {}
+        for url in self.relays:
+            relay = self.relays[url]
+            ret[url] = relay.get_relay_information()
+        return ret

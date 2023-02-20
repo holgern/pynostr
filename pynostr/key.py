@@ -175,7 +175,7 @@ class PrivateKey:
     def sign_delegation(self, delegation: Delegation) -> None:
         delegation.signature = self.sign(
             sha256(delegation.delegation_token.encode()).digest()
-        )
+        ).hex()
 
     def __eq__(self, other):
         return self.raw_secret == other.raw_secret

@@ -2,3 +2,5 @@ coincurve>=1.8.0
 tlv8
 cryptography
 typer
+rich
+requests

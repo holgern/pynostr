@@ -29,6 +29,17 @@ class NoticeMessage:
 
 
 @dataclass
+class OKMessage:
+    event_id: str
+    ok: str
+    message: str
+    url: str
+
+    def __repr__(self):
+        return f'OK({self.url}: {self.event_id} {self.ok} {self.message})'
+
+
+@dataclass
 class EndOfStoredEventsMessage:
     subscription_id: str
     url: str
@@ -43,6 +54,7 @@ class MessagePool:
         self.events: Queue[EventMessage] = Queue()
         self.notices: Queue[NoticeMessage] = Queue()
         self.eose_notices: Queue[EndOfStoredEventsMessage] = Queue()
+        self.ok_notices: Queue[OKMessage] = Queue()
         self._unique_objects: set = set()
         self.lock: Lock = Lock()
 
@@ -50,13 +62,15 @@ class MessagePool:
         self._process_message(message, url)
 
     def get_all(self):
-        results = {"events": [], "notices": [], "eose": []}
+        results = {"events": [], "notices": [], "eose": [], "ok": []}
         while self.has_events():
             results["events"].append(self.get_event())
         while self.has_notices():
             results["notices"].append(self.get_notice())
         while self.has_eose_notices():
             results["eose"].append(self.get_eose_notice())
+        while self.has_ok_notices():
+            results["ok"].append(self.get_ok_notice())
         return results
 
     def get_event(self):
@@ -68,6 +82,9 @@ class MessagePool:
     def get_eose_notice(self):
         return self.eose_notices.get()
 
+    def get_ok_notice(self):
+        return self.ok_notices.get()
+
     def has_events(self):
         return self.events.qsize() > 0
 
@@ -76,6 +93,9 @@ class MessagePool:
 
     def has_eose_notices(self):
         return self.eose_notices.qsize() > 0
+
+    def has_ok_notices(self):
+        return self.ok_notices.qsize() > 0
 
     def _process_message(self, message: str, url: str):
         message_json = json.loads(message)
@@ -96,11 +116,15 @@ class MessagePool:
             self.notices.put(NoticeMessage(message_json[1], url))
         elif message_type == RelayMessageType.END_OF_STORED_EVENTS:
             self.eose_notices.put(EndOfStoredEventsMessage(message_json[1], url))
+        elif message_type == RelayMessageType.OK:
+            self.eose_notices.put(
+                OKMessage(message_json[1], message_json[2], message_json[3], url)
+            )
 
     def __repr__(self):
         return (
             f'Pool(events({self.events.qsize()}) notices({self.notices.qsize()}) '
-            f'eose({self.eose_notices.qsize()}))'
+            f'eose({self.eose_notices.qsize()}) ok({self.ok_notices.qsize()}))'
         )
 
 

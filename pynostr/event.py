@@ -26,6 +26,7 @@ class EventKind(IntEnum):
     CHANNEL_MESSAGE = 42
     CHANNEL_HIDE = 43
     CHANNEL_MUTE = 44
+    REPORT = 1984
     RELAY_LIST_METADATA = 10002
 
 
@@ -98,8 +99,10 @@ class Event:
         self.compute_id()
 
     def has_pubkey_ref(self, pubkey: str):
-        for tag_type, tag in self.tags:
-            if tag_type == 'p' and tag == pubkey:
+        for tag in self.tags:
+            if not tag and len(tag) < 2:
+                continue
+            if tag[0] == 'p' and tag[1] == pubkey:
                 return True
         return False
 
@@ -110,8 +113,10 @@ class Event:
 
     def has_event_ref(self, event_id: str):
         """Check if a e tag to the given event_id exists."""
-        for tag_type, tag in self.tags:
-            if tag_type == 'e' and tag == event_id:
+        for tag in self.tags:
+            if not tag and len(tag) < 2:
+                continue
+            if tag[0] == 'e' and tag[1] == event_id:
                 return True
         return False
 
@@ -126,24 +131,28 @@ class Event:
     def get_tag_list(self, tag_type: str = 'e'):
         """Returns all tags of given type as list."""
         ret = []
-        for _tag_type, _tag in self.tags:
-            if _tag_type == tag_type:
-                ret.append(_tag)
+        for tag in self.tags:
+            if not tag and len(tag) < 2:
+                continue
+            if tag[0] == tag_type:
+                ret.append(tag[1])
         return ret
 
     def get_tag_types(self):
         """Returns list of all included tag types."""
         ret = []
-        for tag_type, _ in self.tags:
-            if tag_type not in ret:
-                ret.append(tag_type)
+        for tag in self.tags:
+            if not tag and len(tag) == 0:
+                continue
+            if tag[0] not in ret:
+                ret.append(tag[0])
         return ret
 
     def get_tag_count(self, tag_type: str = 'e'):
         """Returns all tags of given type as list."""
         count = 0
-        for _tag_type, _tag in self.tags:
-            if _tag_type == tag_type:
+        for tag in self.tags:
+            if len(tag) > 0 and tag[0] == tag_type:
                 count += 1
         return count
 

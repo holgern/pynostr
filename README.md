@@ -13,6 +13,15 @@ This library is using coincurve instead of secp256k1, so pynostr can be used on 
 
 This library works with python >= 3.7
 
+## Features
+
+NIPs with a relay-specific implementation are listed here.
+
+- [x] NIP-01: Basic protocol flow description
+- [x] NIP-02: Contact List and Petnames
+- [x] NIP-04: Encrypted Direct Message
+
+
 ## Installation
 ```bash
 pip install pynostr
@@ -29,6 +38,7 @@ pkg install binutils
 pkg install python-cryptography
 pip install coincurve --no-binary all
 ```
+
 ## Usage
 **Generate a key**
 ```python
@@ -156,6 +166,37 @@ dm.encrypt_dm(private_key.hex()
   cleartext_content="Secret message!"
 )
 dm.sign(private_key.hex())
+```
+
+**NIP-26 delegation**
+```python
+from pynostr.delegation import Delegation
+from pynostr.event import EventKind, Event
+from pynostr.key import PrivateKey
+
+# Load your "identity" PK that you'd like to keep safely offline
+identity_pk = PrivateKey.from_nsec("nsec1...")
+
+# Create a new, disposable PK as the "delegatee" that can be "hot" in a Nostr client
+delegatee_pk = PrivateKey()
+
+# the "identity" PK will authorize "delegatee" to sign TEXT_NOTEs on its behalf for the next month
+delegation = Delegation(
+    delegator_pubkey=identity_pk.public_key.hex(),
+    delegatee_pubkey=delegatee_pk.public_key.hex(),
+    event_kind=EventKind.TEXT_NOTE,
+    duration_secs=30*24*60*60
+)
+
+identity_pk.sign_delegation(delegation)
+
+event = Event(
+    "Hello, NIP-26!",
+    tags=[delegation.get_tag()],
+)
+event.sign(self.delegatee_pk.hex())
+
+# ...normal broadcast steps...
 ```
 
 ## Test Suite

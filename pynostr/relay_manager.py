@@ -16,11 +16,18 @@ from .relay import Relay
 @dataclass
 class RelayManager:
     error_threshold: int = 0
+    connection_monitor_interval_secs: int = 5
 
     def __post_init__(self):
         self.relays: dict[str, Relay] = {}
         self.message_pool: MessagePool = MessagePool()
         self.lock: Lock = Lock()
+
+        threading.Thread(
+            target=self._relay_connection_monitor,
+            name="relay-connection-monitor",
+            daemon=True,
+        ).start()
 
     def add_relay(
         self,
@@ -36,16 +43,22 @@ class RelayManager:
 
         with self.lock:
             self.relays[url] = relay
-
-        threading.Thread(target=relay.connect, name=f"{relay.url}-thread").start()
-
-        time.sleep(1)
+            relay.connect()
 
     def remove_relay(self, url: str):
         with self.lock:
             if url in self.relays:
                 relay = self.relays.pop(url)
                 relay.close()
+
+    def _relay_connection_monitor(self):
+        while True:
+            with self.lock:
+                for relay in self.relays.values():
+                    if not relay.is_connected:
+                        relay.connect(True)
+
+            time.sleep(self.connection_monitor_interval_secs)
 
     def remove_closed_relays(self):
         for url, connected in self.connection_statuses.items():
@@ -94,25 +107,6 @@ class RelayManager:
             for url in self.relays:
                 relay = self.relays[url]
                 relay.close()
-
-    def open_connections(self, ssl_options: dict = None):
-        for relay in self.relays.values():
-            if not relay.is_connected:
-                threading.Thread(
-                    target=relay.connect,
-                    name=f"{relay.url}-thread",
-                ).start()
-        time.sleep(2)
-        self.remove_closed_relays()
-        assert all(self.connection_statuses.values())
-        self._is_connected = True
-
-    def close_connections(self):
-        for relay in self.relays.values():
-            relay.close()
-
-        assert not any(self.connection_statuses.values())
-        self._is_connected = False
 
     @property
     def connection_statuses(self) -> dict:
