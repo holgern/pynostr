@@ -47,7 +47,7 @@ repos:
         name: isort except __init__.py
         exclude: (^(dev/)|/__init__\.py$)
   - repo: https://github.com/myint/docformatter
-    rev: v1.6.0.rc1
+    rev: v1.4
     hooks:
       - id: docformatter
         exclude: ^(dev/)
