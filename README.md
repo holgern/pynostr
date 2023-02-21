@@ -20,6 +20,9 @@ NIPs with a relay-specific implementation are listed here.
 - [x] NIP-01: Basic protocol flow description
 - [x] NIP-02: Contact List and Petnames
 - [x] NIP-04: Encrypted Direct Message
+- [x] NIP-05: Mapping Nostr keys to DNS-based internet identifiers
+- [x] NIP-10: Conventions for clients' use of e and p tags in text events
+- [x] NIP-11: Relay Information Document
 
 
 ## Installation

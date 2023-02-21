@@ -5,8 +5,6 @@ from queue import Queue
 from threading import Lock
 from typing import Dict
 
-import requests
-
 from .event import Event
 from .filters import FiltersList
 from .message_pool import MessagePool
@@ -145,30 +143,3 @@ class BaseRelay:
             if message_type[2] not in ["true", "false"]:
                 return False
         return True
-
-    def get_relay_information(self):
-        headers = {'Accept': 'application/nostr+json'}
-        if "wss" in self.url:
-            metadata_uri = self.url.replace("wss", "https")
-        elif "ws" in self.url:
-            metadata_uri = self.url.replace("ws", "http")
-        else:
-            raise Exception(f"{self.url} is not a websocket url")
-        try:
-            response = requests.get(metadata_uri, headers=headers, timeout=5)
-
-            response.raise_for_status()
-
-            metadata = response.json()
-            return metadata
-        except requests.exceptions.Timeout:
-            # Handle a timeout error
-            log.warning("Request timed out. Please try again later.")
-
-        except requests.exceptions.HTTPError as err:
-            # Handle an HTTP error
-            log.warning(f"HTTP error occurred: {err}")
-
-        except requests.exceptions.RequestException as err:
-            # Handle any other request exception
-            log.warning(f"An error occurred: {err}")

@@ -1,11 +1,10 @@
 import logging
-from typing import Union
 
 from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketError, websocket_connect
 
-from .base_relay import BaseRelay, RelayPolicy, RelayProxyConnectionConfig
+from .base_relay import BaseRelay, RelayPolicy
 from .message_pool import MessagePool
 
 log = logging.getLogger(__name__)
@@ -18,13 +17,9 @@ class TornadoRelay(BaseRelay):
         message_pool: MessagePool,
         io_loop: IOLoop,
         policy: RelayPolicy = RelayPolicy(),
-        ssl_options: dict = None,
-        proxy_config: Union[None, RelayProxyConnectionConfig] = None,
         close_on_eose: bool = True,
     ) -> None:
-        super().__init__(
-            url, message_pool, policy, ssl_options, proxy_config, close_on_eose
-        )
+        super().__init__(url, message_pool, policy, None, None, close_on_eose)
         self.io_loop = io_loop
         self.running = True
 

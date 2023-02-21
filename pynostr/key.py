@@ -9,8 +9,8 @@ from coincurve._libsecp256k1 import ffi, lib
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from .bech32 import bech32_decode, bech32_encode
 from .delegation import Delegation
+from .utils import bech32_decode, bech32_encode
 
 HAS_ECDH = hasattr(lib, 'secp256k1_ecdh')
 
