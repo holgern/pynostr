@@ -12,6 +12,7 @@ from .exception import RelayException
 from .filters import FiltersList
 from .message_pool import MessagePool
 from .tornado_relay import TornadoRelay
+from .utils import get_relay_information
 
 log = logging.getLogger(__name__)
 
@@ -154,6 +155,5 @@ class TornadoRelayManager:
     def get_relay_information(self):
         ret = {}
         for url in self.relays:
-            relay = self.relays[url]
-            ret[url] = relay.get_relay_information()
+            ret[url] = get_relay_information(url)
         return ret
