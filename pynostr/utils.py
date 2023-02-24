@@ -102,6 +102,7 @@ def get_relay_information(url: str, timeout: float = 2):
         response.raise_for_status()
 
         metadata = response.json()
+        metadata["url"] = url
         return metadata
     except requests.exceptions.Timeout:
         # Handle a timeout error
@@ -149,3 +150,33 @@ def get_timestamp(days=0, seconds=0, minutes=0, hours=0, weeks=0):
         days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks
     )
     return int(date.timestamp())
+
+
+def get_relay_list(relay_type="online", nip=None, timeout=5):
+    """Uses the API from https://api.nostr.watch/
+
+    :param relay_type: can be online, offline or nip
+    :param nip: is used when relay_type is set to nip
+    """
+    headers = {'User-Agent': 'pynostr'}
+    url = f"https://api.nostr.watch/v1/{relay_type}"
+    if nip is not None:
+        url += f"/{nip}"
+    try:
+        response = requests.get(url, headers=headers, timeout=timeout)
+
+        response.raise_for_status()
+
+        data = response.json()
+        return data
+    except requests.exceptions.Timeout:
+        # Handle a timeout error
+        log.warning("Request timed out. Please try again later.")
+
+    except requests.exceptions.HTTPError as err:
+        # Handle an HTTP error
+        log.warning(f"HTTP error occurred: {err}")
+
+    except requests.exceptions.RequestException as err:
+        # Handle any other request exception
+        log.warning(f"An error occurred: {err}")
