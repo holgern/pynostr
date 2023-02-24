@@ -137,7 +137,7 @@ class MessagePool:
         elif message_type == RelayMessageType.END_OF_STORED_EVENTS:
             self.eose_notices.put(EndOfStoredEventsMessage(message_json[1], url))
         elif message_type == RelayMessageType.OK:
-            self.eose_notices.put(
+            self.ok_notices.put(
                 OKMessage(message_json[1], message_json[2], message_json[3], url)
             )
 

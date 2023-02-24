@@ -1,12 +1,13 @@
-"""Forked from https://github.com/jeffthibault/python-nostr.git."""
-import time
-from threading import Thread
-from typing import Union
+import logging
 
-from websocket import WebSocketApp
+from tornado import gen
+from tornado.ioloop import IOLoop
+from tornado.websocket import WebSocketError, websocket_connect
 
-from .base_relay import BaseRelay, RelayPolicy, RelayProxyConnectionConfig
+from .base_relay import BaseRelay, RelayPolicy
 from .message_pool import MessagePool
+
+log = logging.getLogger(__name__)
 
 
 class Relay(BaseRelay):
@@ -14,82 +15,88 @@ class Relay(BaseRelay):
         self,
         url: str,
         message_pool: MessagePool,
+        io_loop: IOLoop,
         policy: RelayPolicy = RelayPolicy(),
-        ssl_options: dict = None,
-        proxy_config: Union[None, RelayProxyConnectionConfig] = None,
+        close_on_eose: bool = True,
+        message_callback=None,
     ) -> None:
-        super().__init__(url, message_pool, policy, ssl_options, proxy_config)
-        self.ws: WebSocketApp = WebSocketApp(
-            self.url,
-            on_open=self._on_open,
-            on_message=self._on_message,
-            on_error=self._on_error,
-            on_close=self._on_close,
+        super().__init__(
+            url, message_pool, policy, None, None, close_on_eose, message_callback
         )
-        self._connection_thread: Thread = None
+        self.io_loop = io_loop
+        self.running = True
 
     @property
     def is_connected(self) -> bool:
-        with self.lock:
-            if (
-                self._connection_thread is None
-                or not self._connection_thread.is_alive()
-            ):
-                return False
-            else:
-                return True
+        return self.ws is not None and self.ws.protocol is not None
 
-    def close(self):
-        if self.is_connected:
-            self.ws.close()
-
-    def connect(self, is_reconnect=False):
-        if not self.is_connected:
-            with self.lock:
-                self._connection_thread = Thread(
-                    target=self.ws.run_forever,
-                    kwargs={
-                        "sslopt": self.ssl_options,
-                        "http_proxy_host": self.proxy_config.host
-                        if self.proxy_config is not None
-                        else None,
-                        "http_proxy_port": self.proxy_config.port
-                        if self.proxy_config is not None
-                        else None,
-                        "proxy_type": self.proxy_config.type
-                        if self.proxy_config is not None
-                        else None,
-                    },
-                    name=f"{self.url}-connection",
+    @gen.coroutine
+    def connect(self, timeout=2):
+        error = False
+        try:
+            if timeout > 0:
+                self.ws = yield gen.with_timeout(
+                    self.io_loop.time() + timeout,
+                    websocket_connect(
+                        self.url,
+                        ping_interval=60,
+                        ping_timeout=120,
+                    ),
                 )
-                self._connection_thread.start()
-
-            if not is_reconnect:
-                Thread(
-                    target=self.outgoing_messages_worker,
-                    name=f"{self.url}-outgoing-messages-worker",
-                    daemon=True,
-                ).start()
-
-            time.sleep(1)
-
-    def outgoing_messages_worker(self):
-        while True:
-            if self.is_connected:
-                message = self.outgoing_messages.get()
-                try:
-                    self.ws.send(message)
+            else:
+                self.ws = yield websocket_connect(
+                    self.url,
+                    ping_interval=60,
+                    ping_timeout=120,
+                )
+            self.connected = True
+            # yield self.ws.write_message(self.request)
+            self.publish(self.request)
+            # self.io_loop.call_later(1, self.send_message, self.request)
+            while True:
+                if self.outgoing_messages.qsize() > 0:
+                    message = self.outgoing_messages.get()
                     self.num_sent_events += 1
-                except Exception:
-                    self.outgoing_messages.put(message)
+                    yield self.ws.write_message(message)
+                message = yield self.ws.read_message()
+                if message is None:
+                    break
+                self._on_message(message)
+                if not self.connected:
+                    break
 
-    def _on_open(self, class_obj):
-        pass
+        except gen.TimeoutError:
+            log.warning("Timeout connecting to", self.url)
+            error = True
+        except WebSocketError as e:
+            log.warning(f"Error connecting to WebSocket server at {self.url}: {e}")
+            error = True
+        except Exception as e:
+            log.warning(f"Error connecting to {self.url}: {e}")
+            error = True
+        if error:
+            self.error_counter += 1
+            if self.error_counter <= self.error_threshold:
+                self.io_loop.call_later(1, self.connect, timeout)
+            else:
+                return
+        # print(self.request)
+        # self.publish(self.request)
 
-    def _on_close(self, class_obj, status_code, message):
-        self.error_counter = 0
+        log.info(f"WebSocket connection to {self.url} closed")
 
-    def _on_error(self, class_obj, error):
-        self.error_counter += 1
-        if self.error_counter > self.error_threshold:
+    def _eose_received(self):
+        if self.close_on_eose:
             self.close()
+
+    @gen.coroutine
+    def start(self):
+        yield self.connect()
+
+    @gen.coroutine
+    def close(self):
+        if self.ws is not None:
+            self.connected = False
+            self.error_counter = 0
+            yield self.ws.close()
+            # self.io_loop.stop()

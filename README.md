@@ -29,9 +29,9 @@ NIPs with a relay-specific implementation are listed here.
 ```bash
 pip install pynostr
 ```
-with tornado support
+with websocket-client support
 ```bash
-pip install pynostr[tornado]
+pip install pynostr[websocket-client]
 ```
 The necessary coincurve can be installed on android inside termux:
 ```bash
@@ -67,7 +67,7 @@ relay_manager.add_relay("wss://relay.damus.io")
 filters = FiltersList([Filters(kinds=[EventKind.TEXT_NOTE], limit=100)])
 subscription_id = uuid.uuid1().hex
 relay_manager.add_subscription_on_all_relays(subscription_id, filters)
-time.sleep(1.25)
+relay_manager.run_sync(timeout=2)
 while relay_manager.message_pool.has_notices():
     notice_msg = relay_manager.message_pool.get_notice()
     print(notice_msg.content)
@@ -77,22 +77,23 @@ while relay_manager.message_pool.has_events():
 relay_manager.close_all_relay_connections()
 ```
 
-**Connect to relays using tornado**
+**Connect to signle relay**
 ```python
-from pynostr.tornado_relay import TornadoRelay
+from pynostr.relay import Relay
 from pynostr.filters import FiltersList, Filters
 from pynostr.event import EventKind
 from pynostr.base_relay import RelayPolicy
 from pynostr.message_pool import MessagePool
 import tornado.ioloop
+from tornado import gen
 import time
 import uuid
 
 message_pool = MessagePool(first_response_only=False)
 policy = RelayPolicy()
 io_loop = tornado.ioloop.IOLoop.current()
-r = TornadoRelay(
-    "wss://nostr-pub.wellorder.net",
+r = Relay(
+    "wss://relay.damus.io",
     message_pool,
     io_loop,
     policy
@@ -101,10 +102,13 @@ filters = FiltersList([Filters(kinds=[EventKind.TEXT_NOTE], limit=100)])
 subscription_id = uuid.uuid1().hex
 
 r.add_subscription(subscription_id, filters)
-io_loop.add_callback(r.start)
-io_loop.start()
 
-time.sleep(1.25)
+try:
+    io_loop.run_sync(r.connect, timeout=2)
+except gen.Return:
+    pass
+io_loop.stop()
+
 while message_pool.has_notices():
     notice_msg = message_pool.get_notice()
     print(notice_msg.content)
@@ -129,22 +133,25 @@ from pynostr.key import PrivateKey
 relay_manager = RelayManager()
 relay_manager.add_relay("wss://nostr-pub.wellorder.net")
 relay_manager.add_relay("wss://relay.damus.io")
-time.sleep(1.25) # allow the connections to open
-
 private_key = PrivateKey()
 
 filters = FiltersList([Filters(authors=[private_key.public_key.hex()], limit=100)])
 subscription_id = uuid.uuid1().hex
 relay_manager.add_subscription_on_all_relays(subscription_id, filters)
+
 event = Event("Hello Nostr")
 event.sign(private_key.hex())
 
 relay_manager.publish_event(event)
-time.sleep(1) # allow the messages to send
+relay_manager.run_sync(timeout=6)
+time.sleep(5) # allow the messages to send
+while relay_manager.message_pool.has_ok_notices():
+    ok_msg = relay_manager.message_pool.get_ok_notice()
+    print(ok_msg)
 while relay_manager.message_pool.has_events():
     event_msg = relay_manager.message_pool.get_event()
     print(event_msg.event.to_dict())
-relay_manager.close_all_relay_connections()
+
 ```
 
 **Reply to a note**

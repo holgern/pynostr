@@ -20,7 +20,7 @@ dependencies = [
     "cryptography>=37.0.4",
     "tlv8",
     "typer",
-    "websocket-client>=1.3.3",
+    "tornado",
     "rich",
     "requests"
 ]
@@ -41,7 +41,7 @@ classifiers=[
 dynamic=["version"]
 
 [project.optional-dependencies]
-tornado = ["tornado"]
+websocket-client = ["websocket-client>=1.3.3"]
 
 [tool.setuptools_scm]
 write_to = "pynostr/_version.py"

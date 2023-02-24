@@ -4,3 +4,4 @@ coverage
 pytest-cov
 tox
 tornado
+websocket-client

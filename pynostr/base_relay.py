@@ -40,6 +40,7 @@ class BaseRelay:
         ssl_options: dict = None,
         proxy_config: RelayProxyConnectionConfig = None,
         close_on_eose: bool = True,
+        message_callback=None,
     ) -> None:
         self.url = url
         self.message_pool = message_pool
@@ -55,6 +56,7 @@ class BaseRelay:
         self.error_threshold: int = 10
         self.num_sent_events: int = 0
         self.request: str = ""
+        self.message_callback = message_callback
         self.outgoing_messages = Queue()
 
     def __repr__(self):
@@ -89,6 +91,8 @@ class BaseRelay:
     def _on_message(self, message):
         if self._is_valid_message(message):
             message_json = json.loads(message)
+            if self.message_callback is not None:
+                self.message_callback(message_json)
             message_type = message_json[0]
             if message_type == RelayMessageType.EVENT:
                 # event = Event.from_dict(message_json[2])
@@ -140,6 +144,10 @@ class BaseRelay:
         elif message_type == RelayMessageType.OK:
             if not len(message_json) == 4:
                 return False
-            if message_type[2] not in ["true", "false"]:
+            if message_json[2] in ["true", "false"]:
+                return True
+            elif isinstance(message_json[2], bool):
+                return True
+            else:
                 return False
         return True
