@@ -24,6 +24,11 @@ class TestMessagePool(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].url, url)
         self.assertEqual(results[0].content, "Test Notice")
+        mp.add_message('["NOTICE", "Test Notice"]', url)
+        results = mp.get_all_notices()
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].url, url)
+        self.assertEqual(results[0].content, "Test Notice")
 
     def test_eose(self):
         mp = MessagePool()
@@ -33,6 +38,10 @@ class TestMessagePool(unittest.TestCase):
         self.assertEqual(mp.has_notices(), 0)
         self.assertEqual(mp.has_eose_notices(), 1)
         results = mp.get_all()["eose"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].url, url)
+        mp.add_message(json.dumps(["EOSE", uuid.uuid1().hex]), url)
+        results = mp.get_all_eose()
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].url, url)
 
@@ -45,5 +54,9 @@ class TestMessagePool(unittest.TestCase):
         self.assertEqual(mp.has_notices(), 0)
         self.assertEqual(mp.has_eose_notices(), 0)
         results = mp.get_all()["events"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].url, url)
+        mp.add_message(json.dumps(["EVENT", uuid.uuid1().hex, e.to_dict()]), url)
+        results = mp.get_all_events()
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].url, url)

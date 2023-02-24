@@ -61,16 +61,36 @@ class MessagePool:
     def add_message(self, message: str, url: str):
         self._process_message(message, url)
 
+    def get_all_events(self):
+        events = []
+        while self.has_events():
+            events.append(self.get_event())
+        return events
+
+    def get_all_notices(self):
+        notices = []
+        while self.has_notices():
+            notices.append(self.get_notice())
+        return notices
+
+    def get_all_eose(self):
+        eose = []
+        while self.has_eose_notices():
+            eose.append(self.get_eose_notice())
+        return eose
+
+    def get_all_ok(self):
+        ok = []
+        while self.has_ok_notices():
+            ok.append(self.get_ok_notice())
+        return ok
+
     def get_all(self):
         results = {"events": [], "notices": [], "eose": [], "ok": []}
-        while self.has_events():
-            results["events"].append(self.get_event())
-        while self.has_notices():
-            results["notices"].append(self.get_notice())
-        while self.has_eose_notices():
-            results["eose"].append(self.get_eose_notice())
-        while self.has_ok_notices():
-            results["ok"].append(self.get_ok_notice())
+        results["events"] = self.get_all_events()
+        results["notices"] = self.get_all_notices()
+        results["eose"] = self.get_all_eose()
+        results["ok"] = self.get_all_ok()
         return results
 
     def get_event(self):

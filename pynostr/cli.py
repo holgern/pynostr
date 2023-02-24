@@ -74,6 +74,12 @@ def info(objects: str):
         for i in range(len(relays)):
             table.add_row(f"relay{i}", relays[i])
         console.print(table)
+    elif "npub" in objects:
+        pubkey = PublicKey.from_npub(objects)
+        table = Table("key", "value")
+        table.add_row("pubkey", pubkey.hex())
+        table.add_row("npub", str(pubkey.bech32()))
+        console.print(table)
 
 
 @app.callback()

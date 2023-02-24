@@ -69,7 +69,10 @@ class Metadata:
     def from_nip05(cls, nip05: str) -> 'Metadata':
         m = Metadata()
         m.nip05 = nip05
-        pubkey, relays = extract_nip05(nip05)
+        try:
+            pubkey, relays = extract_nip05(nip05)
+        except Exception:
+            return m
         if pubkey is not None:
             m.pubkey = pubkey
         if relays is not None:
@@ -85,7 +88,10 @@ class Metadata:
     def validate_nip05(self):
         if self.nip05 is None or self.pubkey is None:
             return False
-        pubkey, relays = extract_nip05(self.nip05)
+        try:
+            pubkey, relays = extract_nip05(self.nip05)
+        except Exception:
+            return False
         if pubkey is not None:
             if pubkey == self.pubkey:
                 return True

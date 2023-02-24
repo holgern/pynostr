@@ -27,6 +27,8 @@ class EventKind(IntEnum):
     CHANNEL_HIDE = 43
     CHANNEL_MUTE = 44
     REPORT = 1984
+    ZAP_REQUEST = 9734
+    ZAPPER = 9735
     RELAY_LIST_METADATA = 10002
 
 

@@ -1,4 +1,5 @@
 import binascii
+import datetime
 import logging
 
 import requests
@@ -12,8 +13,11 @@ log = logging.getLogger(__name__)
 def bech32_decode(bech32_str: str):
     """Loads bytes from its bech32/nsec form."""
     hrp, data, spec = bech32.bech32_decode(bech32_str)
-    raw_secret = bech32.convertbits(data, 5, 8)[:-1]
-    return bytes(raw_secret)
+    raw_secret = bech32.convertbits(data, 5, 8)
+    if raw_secret[-1] != 0x0:
+        return bytes(raw_secret)
+    else:
+        return bytes(raw_secret[:-1])
 
 
 def bech32_encode(raw_bytes: bytes, prefix: str) -> str:
@@ -37,7 +41,9 @@ def get_nip05_response(name, url):
         return {}
     request_url = f"https://{url}/.well-known/nostr.json?name={name}"
     try:
-        response = requests.get(request_url, timeout=5)
+        response = requests.get(
+            request_url, headers={'User-Agent': 'pynostr'}, timeout=5
+        )
 
         response.raise_for_status()
 
@@ -82,8 +88,8 @@ def extract_nip05(nip05: str):
     return check_nip05(nip05_response, name)
 
 
-def get_relay_information(url: str):
-    headers = {'Accept': 'application/nostr+json'}
+def get_relay_information(url: str, timeout: float = 2):
+    headers = {'Accept': 'application/nostr+json', 'User-Agent': 'pynostr'}
     if "wss" in url:
         metadata_uri = url.replace("wss", "https")
     elif "ws" in url:
@@ -91,7 +97,7 @@ def get_relay_information(url: str):
     else:
         raise Exception(f"{url} is not a websocket url")
     try:
-        response = requests.get(metadata_uri, headers=headers, timeout=5)
+        response = requests.get(metadata_uri, headers=headers, timeout=timeout)
 
         response.raise_for_status()
 
@@ -135,3 +141,11 @@ def nprofile_encode(pubkey: str, relays: [str]):
     for entry in structure:
         bytes_data += entry.encode()
     return bech32_encode(bytes_data, "nprofile")
+
+
+def get_timestamp(days=0, seconds=0, minutes=0, hours=0, weeks=0):
+    utc_now = datetime.datetime.utcnow()
+    date = utc_now - datetime.timedelta(
+        days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks
+    )
+    return int(date.timestamp())
