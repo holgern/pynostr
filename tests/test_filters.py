@@ -1,6 +1,7 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
 import unittest
 
+from pynostr.encrypted_dm import EncryptedDirectMessage
 from pynostr.event import Event, EventKind
 from pynostr.filters import Filters, FiltersList
 from pynostr.key import PrivateKey
@@ -79,27 +80,32 @@ class TestFilters(unittest.TestCase):
                 kind=EventKind.ENCRYPTED_DIRECT_MESSAGE,
             ),
         ]
-        cls.pk1_pk2_dms[0].encrypt_dm(
+        dm1 = EncryptedDirectMessage()
+        dm1.encrypt(
             cls.pk1.hex(),
             recipient_pubkey=cls.pk2.public_key.hex(),
             cleartext_content="Hey pk2, here's a secret",
         )
-        cls.pk1_pk2_dms[1].encrypt_dm(
+        cls.pk1_pk2_dms[0] = dm1.to_event()
+
+        dm2 = EncryptedDirectMessage()
+        dm2.encrypt(
             cls.pk2.hex(),
             recipient_pubkey=cls.pk1.public_key.hex(),
             cleartext_content="Thanks! I'll keep it secure.",
         )
+        cls.pk1_pk2_dms[1] = dm2.to_event()
 
     def test_match_by_event_id(self):
         """Should match Events by event_id."""
         filters = Filters(
             ids=[self.pk1_thread[0].id],
         )
-        assert filters.matches(self.pk1_thread[0])
+        self.assertTrue(filters.matches(self.pk1_thread[0]))
 
         # None of the others should match
         for event in self.pk1_thread[1:] + self.pk2_thread + self.pk1_pk2_dms[1:]:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
     def test_multiple_values_in_same_tag(self):
         """Should treat multiple tag values as OR searches."""
@@ -110,12 +116,12 @@ class TestFilters(unittest.TestCase):
                 "some_other_event_id",
             ],
         )
-        assert filters.matches(self.pk1_thread[0])
-        assert filters.matches(self.pk1_pk2_dms[0])
+        self.assertTrue(filters.matches(self.pk1_thread[0]))
+        self.assertTrue(filters.matches(self.pk1_pk2_dms[0]))
 
         # None of the others should match
         for event in self.pk1_thread[1:] + self.pk2_thread + self.pk1_pk2_dms[1:]:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
     def test_match_by_kinds(self):
         """Should match Events by kind."""
@@ -125,11 +131,11 @@ class TestFilters(unittest.TestCase):
 
         # Both threads should match
         for event in self.pk1_thread + self.pk2_thread:
-            assert filters.matches(event)
+            self.assertTrue(filters.matches(event))
 
         # DMs should not match
         for event in self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
         # Now allow either kind
         filters = Filters(
@@ -138,7 +144,7 @@ class TestFilters(unittest.TestCase):
 
         # Now everything should match
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event)
+            self.assertTrue(filters.matches(event))
 
     def test_match_by_authors(self):
         """Should match Events by author."""
@@ -150,7 +156,7 @@ class TestFilters(unittest.TestCase):
             for event in (self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms)
             if event.pubkey == self.pk1.public_key.hex()
         ]:
-            assert filters.matches(event)
+            self.assertTrue(filters.matches(event))
 
         # None of pk2's should match
         for event in [
@@ -158,7 +164,7 @@ class TestFilters(unittest.TestCase):
             for event in (self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms)
             if event.pubkey == self.pk2.public_key.hex()
         ]:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
     def test_match_by_event_refs(self):
         """Should match Events by event_ref 'e' tags."""
@@ -167,12 +173,12 @@ class TestFilters(unittest.TestCase):
         )
 
         # All replies to pk1's initial note should match (even pk1's reply at the end)
-        assert filters.matches(self.pk1_thread[1])
-        assert filters.matches(self.pk1_thread[2])
+        self.assertTrue(filters.matches(self.pk1_thread[1]))
+        self.assertTrue(filters.matches(self.pk1_thread[2]))
 
         # Everything else should not match
         for event in [self.pk1_thread[0]] + self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
     def test_match_by_pubkey_refs(self):
         """Should match Events by pubkey_ref 'p' tags."""
@@ -181,10 +187,10 @@ class TestFilters(unittest.TestCase):
         )
 
         # pk2's reply in pk1's thread should match
-        assert filter.matches(self.pk1_thread[1])
+        self.assertTrue(filter.matches(self.pk1_thread[1]))
 
         # pk2's DM reply to pk1 should match
-        assert filter.matches(self.pk1_pk2_dms[1])
+        self.assertTrue(filter.matches(self.pk1_pk2_dms[1]))
 
         # Everything else should not match
         for event in (
@@ -192,7 +198,7 @@ class TestFilters(unittest.TestCase):
             + self.pk2_thread
             + [self.pk1_pk2_dms[0]]
         ):
-            assert filter.matches(event) is False
+            self.assertFalse(filter.matches(event))
 
     def test_match_by_arbitrary_single_letter_tag(self):
         """Should match NIP-12 arbitrary single-letter tags."""
@@ -201,7 +207,7 @@ class TestFilters(unittest.TestCase):
 
         # None of our Events match
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
         # A new Event that has the target tag but the wrong value should not match
         event = Event(
@@ -209,7 +215,7 @@ class TestFilters(unittest.TestCase):
             content="Additional event to test with",
             tags=[['x', "bananas"]],
         )
-        assert filters.matches(event) is False
+        self.assertFalse(filters.matches(event))
 
         # But a new Event that includes the target should match
         event = Event(
@@ -217,14 +223,14 @@ class TestFilters(unittest.TestCase):
             content="Additional event to test with",
             tags=[['x', "oranges"]],
         )
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
         # Filter shouldn't care if there are other extraneous values
         event.tags.append(['x', "pizza"])
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
         event.tags.append(['y', "honey badger"])
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
     def test_match_by_arbitrary_multi_letter_tag(self):
         """Should match any arbitrary multi-letter tag."""
@@ -233,7 +239,7 @@ class TestFilters(unittest.TestCase):
 
         # None of our Events match
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
         # A new Event that has the target tag but the wrong value should not match
         event = Event(
@@ -241,7 +247,7 @@ class TestFilters(unittest.TestCase):
             content="Additional event to test with",
             tags=[['favorites', "shitcoin"]],
         )
-        assert filters.matches(event) is False
+        self.assertFalse(filters.matches(event))
 
         # But a new Event that includes the target should match
         event = Event(
@@ -249,14 +255,14 @@ class TestFilters(unittest.TestCase):
             content="Additional event to test with",
             tags=[['favorites', "bitcoin"]],
         )
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
         # Filter shouldn't care if there are other extraneous values
         event.tags.append(['favorites', "sats"])
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
         event.tags.append(['foo', "bar"])
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
     def test_match_by_delegation_tag(self):
         """should match on delegation tag.
@@ -275,7 +281,7 @@ class TestFilters(unittest.TestCase):
 
         # None of our Events match
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
         # A new Event that has the target tag but the wrong value should not match
         event = Event(
@@ -291,7 +297,7 @@ class TestFilters(unittest.TestCase):
                 ]
             ],
         )
-        assert filters.matches(event) is False
+        self.assertFalse(filters.matches(event))
 
         # But a new Event that includes the target should match
         event = Event(
@@ -307,14 +313,14 @@ class TestFilters(unittest.TestCase):
                 ]
             ],
         )
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
         # Filter shouldn't care if there are other extraneous values
         event.tags.append(['favorites', "sats"])
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
         event.tags.append(['foo', "bar"])
-        assert filters.matches(event)
+        self.assertTrue(filters.matches(event))
 
     def test_match_by_authors_and_kinds(self):
         """Should match Events by authors AND kinds."""
@@ -324,13 +330,13 @@ class TestFilters(unittest.TestCase):
         )
 
         # Should match pk1's notes but not pk2's reply
-        assert filters.matches(self.pk1_thread[0])
-        assert filters.matches(self.pk1_thread[1]) is False
-        assert filters.matches(self.pk1_thread[2])
+        self.assertTrue(filters.matches(self.pk1_thread[0]))
+        self.assertFalse(filters.matches(self.pk1_thread[1]))
+        self.assertTrue(filters.matches(self.pk1_thread[2]))
 
         # Should not match anything else
         for event in self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
         # Typical search to get all Events sent by a pubkey
         filters = Filters(
@@ -339,17 +345,17 @@ class TestFilters(unittest.TestCase):
         )
 
         # Should still match pk1's notes but not pk2's reply
-        assert filters.matches(self.pk1_thread[0])
-        assert filters.matches(self.pk1_thread[1]) is False
-        assert filters.matches(self.pk1_thread[2])
+        self.assertTrue(filters.matches(self.pk1_thread[0]))
+        self.assertFalse(filters.matches(self.pk1_thread[1]))
+        self.assertTrue(filters.matches(self.pk1_thread[2]))
 
         # Should not match any of pk2's solo thread
-        assert filters.matches(self.pk2_thread[0]) is False
-        assert filters.matches(self.pk2_thread[1]) is False
+        self.assertFalse(filters.matches(self.pk2_thread[0]))
+        self.assertFalse(filters.matches(self.pk2_thread[1]))
 
         # Should match pk1's DM but not pk2's DM reply
-        assert filters.matches(self.pk1_pk2_dms[0])
-        assert filters.matches(self.pk1_pk2_dms[1]) is False
+        self.assertTrue(filters.matches(self.pk1_pk2_dms[0]))
+        self.assertFalse(filters.matches(self.pk1_pk2_dms[1]))
 
     def test_match_by_kinds_and_pubkey_refs(self):
         """Should match Events by kind AND pubkey_ref 'p' tags."""
@@ -359,11 +365,11 @@ class TestFilters(unittest.TestCase):
         )
 
         # Only pk1's reply to pk2 should match
-        assert filters.matches(self.pk1_thread[2])
+        self.assertTrue(filters.matches(self.pk1_thread[2]))
 
         # Should not match anything else
         for event in self.pk1_thread[:1] + self.pk2_thread + self.pk1_pk2_dms:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
         # Typical search to get all Events sent to a pubkey
         filters = Filters(
@@ -372,39 +378,39 @@ class TestFilters(unittest.TestCase):
         )
 
         # pk1's reply to pk2 should match
-        assert filters.matches(self.pk1_thread[2])
+        self.assertTrue(filters.matches(self.pk1_thread[2]))
 
         # pk2's DM to pk1 should match
-        assert filters.matches(self.pk1_pk2_dms[0])
+        self.assertTrue(filters.matches(self.pk1_pk2_dms[0]))
 
         # Should not match anything else
         for event in self.pk1_thread[:1] + self.pk2_thread + self.pk1_pk2_dms[1:]:
-            assert filters.matches(event) is False
+            self.assertFalse(filters.matches(event))
 
     def test_event_refs_json(self):
         """Should insert event_refs as "#e" in json."""
         filters = Filters(event_refs=["some_event_id"])
-        assert "#e" in filters.to_json_object().keys()
-        assert "e" not in filters.to_json_object().keys()
+        self.assertIn("#e", filters.to_json_object().keys())
+        self.assertNotIn("e", filters.to_json_object().keys())
 
     def test_pubkey_refs_json(self):
         """Should insert pubkey_refs as "#p" in json."""
         filters = Filters(pubkey_refs=["some_pubkey"])
-        assert "#p" in filters.to_json_object().keys()
-        assert "p" not in filters.to_json_object().keys()
+        self.assertIn("#p", filters.to_json_object().keys())
+        self.assertNotIn("p", filters.to_json_object().keys())
 
     def test_arbitrary_single_letter_json(self):
         """Should prefix NIP-12 arbitrary single-letter tags with "#" in json."""
         filters = Filters()
         filters.add_arbitrary_tag('x', ["oranges"])
-        assert "#x" in filters.to_json_object().keys()
-        assert "x" not in filters.to_json_object().keys()
+        self.assertIn("#x", filters.to_json_object().keys())
+        self.assertNotIn("x", filters.to_json_object().keys())
 
     def test_arbitrary_multi_letter_json(self):
         """Should include arbitrary multi-letter tags as-is in json."""
         filters = Filters()
         filters.add_arbitrary_tag('foo', ["bar"])
-        assert "foo" in filters.to_json_object().keys()
+        self.assertIn("foo", filters.to_json_object().keys())
 
 
 # Inherit from TestFilter to get all the same test data
@@ -422,8 +428,8 @@ class TestFilterRequest(TestFilters):
 
         # Should match the entire pk1 thread and the DM exchange
         for event in self.pk1_thread + self.pk1_pk2_dms:
-            assert filtersList.match(event)
+            self.assertTrue(filtersList.match(event))
 
         # Should not match anything in pk2's solo thread
-        assert filtersList.match(self.pk2_thread[0]) is False
-        assert filtersList.match(self.pk2_thread[1]) is False
+        self.assertFalse(filtersList.match(self.pk2_thread[0]))
+        self.assertFalse(filtersList.match(self.pk2_thread[1]))

@@ -77,7 +77,7 @@ while relay_manager.message_pool.has_events():
 relay_manager.close_all_relay_connections()
 ```
 
-**Connect to signle relay**
+**Connect to single relay**
 ```python
 from pynostr.relay import Relay
 from pynostr.filters import FiltersList, Filters
@@ -169,13 +169,17 @@ reply.sign(private_key.hex())
 
 **Send a DM**
 ```python
-from pynostr.event import Event, EventKind
-dm = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
-dm.encrypt_dm(private_key.hex()
+from pynostr.encrypted_dm import EncryptedDirectMessage
+from pynostr.key import PrivateKey
+private_key = PrivateKey()
+recipient_pubkey = PrivateKey().public_key.hex()
+dm = EncryptedDirectMessage()
+dm.encrypt(private_key.hex(),
   recipient_pubkey=recipient_pubkey,
   cleartext_content="Secret message!"
 )
-dm.sign(private_key.hex())
+dm_event = dm.to_event()
+dm_event.sign(private_key.hex())
 ```
 
 **NIP-26 delegation**

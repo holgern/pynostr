@@ -8,9 +8,9 @@ from enum import IntEnum
 from hashlib import sha256
 from typing import List, Optional
 
-from .bech32 import bech32_encode
 from .key import PrivateKey, PublicKey
 from .message_type import ClientMessageType
+from .utils import bech32_encode
 
 
 class EventKind(IntEnum):
@@ -21,6 +21,7 @@ class EventKind(IntEnum):
     ENCRYPTED_DIRECT_MESSAGE = 4
     DELETE = 5
     REACTION = 7
+    BADGE_AWARD = 8
     CHANNEL_CREATE = 40
     CHANNEL_META = 41
     CHANNEL_MESSAGE = 42
@@ -30,6 +31,9 @@ class EventKind(IntEnum):
     ZAP_REQUEST = 9734
     ZAPPER = 9735
     RELAY_LIST_METADATA = 10002
+    PROFILE_BADGES = 30008
+    BADGE_DEFINITION = 30009
+    LONG_FORM_CONTENT = 30023
 
 
 @dataclass
@@ -57,15 +61,6 @@ class Event:
         if self.content is not None and not isinstance(self.content, str):
             # DMs initialize content to None but all other kinds should pass in a str
             raise TypeError("Argument 'content' must be of type str")
-        elif (
-            self.content is not None
-            and "?iv" not in self.content
-            and self.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE
-        ):
-            raise Exception(
-                "Encrypted DMs cannot use the `content` field; use encrypt_dm()"
-                "for storing an encrypted content."
-            )
         if self.created_at is None:
             self.created_at = int(time.time())
 
@@ -157,20 +152,6 @@ class Event:
             if len(tag) > 0 and tag[0] == tag_type:
                 count += 1
         return count
-
-    def encrypt_dm(
-        self, private_key_hex: str, cleartext_content: str, recipient_pubkey: str
-    ) -> None:
-        if self.kind != EventKind.ENCRYPTED_DIRECT_MESSAGE:
-            raise Exception("Wrong event kind, needs to be ENCRYPTED_DIRECT_MESSAGE")
-        if not self.has_pubkey_ref(recipient_pubkey):
-            # Must specify the DM recipient's pubkey in a 'p' tag
-            self.add_pubkey_ref(recipient_pubkey)
-        sk = PrivateKey(bytes.fromhex(private_key_hex))
-        encrypted_message = sk.encrypt_message(
-            message=cleartext_content, public_key_hex=recipient_pubkey
-        )
-        self.content = encrypted_message
 
     def bech32(self) -> str:
         """bech32-encoded entities (N-19)
