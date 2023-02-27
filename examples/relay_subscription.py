@@ -51,7 +51,7 @@ if __name__ == "__main__":
     io_loop.stop()
 
     event_msgs = message_pool.get_all_events()
-    print(f"{r.url} returned {len(event_msgs)} TEXT_NOTEs from jack.")
+    print(f"{r.url} returned {len(event_msgs)} TEXT_NOTEs from {input_str}.")
 
     table = Table("date", "content")
     for event_msg in event_msgs[::-1]:

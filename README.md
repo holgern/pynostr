@@ -9,7 +9,8 @@
 
 Python library for for [Nostr](https://github.com/nostr-protocol/nostr).
 
-This library is using coincurve instead of secp256k1, so pynostr can be used on windows and is a fork from [python-nostr](https://github.com/jeffthibault/python-nostr).
+This library is using coincurve instead of secp256k1, so pynostr can be used on windows. pynostr started as a fork from [python-nostr](https://github.com/jeffthibault/python-nostr)
+and is now independent from python nostr.
 
 This library works with python >= 3.7
 
@@ -23,6 +24,23 @@ NIPs with a relay-specific implementation are listed here.
 - [x] NIP-05: Mapping Nostr keys to DNS-based internet identifiers
 - [x] NIP-10: Conventions for clients' use of e and p tags in text events
 - [x] NIP-11: Relay Information Document
+
+## Differences from python-nostr
+
+* tornado websockets
+* coincurve secp256k1 implementation
+* no proxies
+* no ssl_options
+* relay can be used to open a connection to a relay
+
+| python-nostr | pynostr |
+| --- | --- |
+| Filter | Filters |
+| Filters | FiltersList |
+| relay_manager.open_connections | relay_manager.run_sync() |
+| relay_manager.close_connections() | - |
+| private_key.sign_event(event) | event.sign(private_key.hex()) |
+
 
 
 ## Installation
