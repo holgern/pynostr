@@ -74,7 +74,7 @@ class Relay(BaseRelay):
                     break
 
         except gen.TimeoutError:
-            log.warning("Timeout connecting to", self.url)
+            log.warning(f"Timeout connecting to {self.url}")
             error = True
         except WebSocketError as e:
             log.warning(f"Error connecting to WebSocket server at {self.url}: {e}")
