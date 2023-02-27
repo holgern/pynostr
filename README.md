@@ -61,13 +61,13 @@ from pynostr.event import EventKind
 import time
 import uuid
 
-relay_manager = RelayManager()
+relay_manager = RelayManager(timeout=2)
 relay_manager.add_relay("wss://nostr-pub.wellorder.net")
 relay_manager.add_relay("wss://relay.damus.io")
 filters = FiltersList([Filters(kinds=[EventKind.TEXT_NOTE], limit=100)])
 subscription_id = uuid.uuid1().hex
 relay_manager.add_subscription_on_all_relays(subscription_id, filters)
-relay_manager.run_sync(timeout=2)
+relay_manager.run_sync()
 while relay_manager.message_pool.has_notices():
     notice_msg = relay_manager.message_pool.get_notice()
     print(notice_msg.content)
@@ -96,7 +96,8 @@ r = Relay(
     "wss://relay.damus.io",
     message_pool,
     io_loop,
-    policy
+    policy,
+    timeout=2
 )
 filters = FiltersList([Filters(kinds=[EventKind.TEXT_NOTE], limit=100)])
 subscription_id = uuid.uuid1().hex
@@ -104,7 +105,7 @@ subscription_id = uuid.uuid1().hex
 r.add_subscription(subscription_id, filters)
 
 try:
-    io_loop.run_sync(r.connect, timeout=2)
+    io_loop.run_sync(r.connect)
 except gen.Return:
     pass
 io_loop.stop()
@@ -130,7 +131,7 @@ from pynostr.filters import FiltersList, Filters
 from pynostr.message_type import ClientMessageType
 from pynostr.key import PrivateKey
 
-relay_manager = RelayManager()
+relay_manager = RelayManager(timeout=6)
 relay_manager.add_relay("wss://nostr-pub.wellorder.net")
 relay_manager.add_relay("wss://relay.damus.io")
 private_key = PrivateKey()
@@ -143,7 +144,7 @@ event = Event("Hello Nostr")
 event.sign(private_key.hex())
 
 relay_manager.publish_event(event)
-relay_manager.run_sync(timeout=6)
+relay_manager.run_sync()
 time.sleep(5) # allow the messages to send
 while relay_manager.message_pool.has_ok_notices():
     ok_msg = relay_manager.message_pool.get_ok_notice()

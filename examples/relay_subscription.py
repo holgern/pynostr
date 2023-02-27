@@ -19,9 +19,19 @@ if __name__ == "__main__":
 
     console = Console()
 
-    nip05 = extract_nip05("jack@cash.app")
+    input_str = input("author (npub or nip05): ")
+    recipient = ""
+    if "@" in input_str:
+        nip05 = extract_nip05(input_str)
+        author = PublicKey.from_hex(nip05[0])
+    elif "npub" in input_str:
+        author = PublicKey.from_hex(input_str)
+    if author != "":
+        print(f"author is set to {author.bech32()}")
+    else:
+        raise Exception("reciever not valed")
+    relay_url = input("relay: ")
 
-    author = PublicKey.from_hex(nip05[0])
     filters = FiltersList(
         [Filters(authors=[author.hex()], kinds=[EventKind.TEXT_NOTE], limit=100)]
     )
@@ -30,7 +40,7 @@ if __name__ == "__main__":
     io_loop = tornado.ioloop.IOLoop.current()
     message_pool = MessagePool(first_response_only=False)
     policy = RelayPolicy()
-    r = Relay("wss://relay.damus.io", message_pool, io_loop, policy)
+    r = Relay(relay_url, message_pool, io_loop, policy, timeout=3)
 
     r.add_subscription(subscription_id, filters)
 

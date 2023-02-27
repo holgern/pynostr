@@ -39,6 +39,7 @@ class BaseRelay:
         policy: RelayPolicy = RelayPolicy(),
         ssl_options: dict = None,
         proxy_config: RelayProxyConnectionConfig = None,
+        timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
     ) -> None:
@@ -47,6 +48,7 @@ class BaseRelay:
         self.policy = policy
         self.ssl_options = ssl_options
         self.proxy_config = proxy_config
+        self.timeout = timeout
         self.close_on_eose = close_on_eose
         self.lock: Lock = Lock()
         self.ws = None

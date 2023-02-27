@@ -145,8 +145,8 @@ def nprofile_encode(pubkey: str, relays: [str]):
 
 
 def get_timestamp(days=0, seconds=0, minutes=0, hours=0, weeks=0):
-    utc_now = datetime.datetime.utcnow()
-    date = utc_now - datetime.timedelta(
+    now = datetime.datetime.now()
+    date = now - datetime.timedelta(
         days=days, seconds=seconds, minutes=minutes, hours=hours, weeks=weeks
     )
     return int(date.timestamp())

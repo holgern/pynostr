@@ -2,6 +2,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
+from typing import Optional
 
 from tornado import gen
 from tornado.ioloop import IOLoop
@@ -19,7 +20,14 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class RelayManager:
-    error_threshold: int = 3
+    """RelayManager.
+
+    :param error_threshold: When set, error_threshold on each relay is overwritten
+    :param timeout:  When set, timeout on each relay is overwritten
+    """
+
+    error_threshold: Optional[int] = None
+    timeout: Optional[float] = None
 
     def __post_init__(self):
         self.relays: dict[str, Relay] = {}
@@ -30,6 +38,7 @@ class RelayManager:
         self,
         url: str,
         policy: RelayPolicy = RelayPolicy(),
+        timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
     ):
@@ -39,12 +48,14 @@ class RelayManager:
             self.message_pool,
             self.io_loop,
             policy,
+            timeout=timeout,
             close_on_eose=close_on_eose,
             message_callback=message_callback,
         )
-        if self.error_threshold:
+        if self.error_threshold is not None:
             relay.error_threshold = self.error_threshold
-
+        if self.timeout is not None:
+            relay.timeout = self.timeout
         self.relays[url] = relay
 
     def remove_relay(self, url: str):
@@ -68,30 +79,32 @@ class RelayManager:
             relay.add_subscription(id, filters)
 
     @gen.coroutine
-    def prepare_relays(self, timeout: int = 2):
+    def prepare_relays(self):
+        futures_timeout = []
         futures = []
         relays = []
         for relay in self.relays.values():
             if relay.policy.should_read:
                 # yield relay.connect()
+                timeout = relay.timeout
                 relays.append(relay)
                 if timeout > 0:
                     future = gen.with_timeout(
-                        self.io_loop.time() + timeout, relay.connect(timeout=0)
+                        self.io_loop.time() + timeout, relay.connect()
                     )
-                    futures.append(future)
+                    futures_timeout.append(future)
                 else:
-                    futures.append(relay.connect(timeout=0))
+                    futures.append(relay.connect())
 
-        if timeout > 0:
-            for i, future in enumerate(futures):
+        if len(futures_timeout) > 0:
+            for i, future in enumerate(futures_timeout):
                 try:
                     yield future
                 except gen.TimeoutError:
                     log.warning(
                         f"Connection to WebSocket client {relays[i].url} timed out"
                     )
-        else:
+        elif len(futures) > 0:
             yield gen.multi(futures)
         raise gen.Return(relays)
 
@@ -100,8 +113,8 @@ class RelayManager:
             if relay.policy.should_read:
                 relay.add_subscription(id, filters)
 
-    def run_sync(self, timeout: int = 2):
-        self.io_loop.run_sync(lambda: self.prepare_relays(timeout))
+    def run_sync(self):
+        self.io_loop.run_sync(lambda: self.prepare_relays())
 
     def close_subscription_on_relay(self, url: str, id: str):
         if url in self.relays:

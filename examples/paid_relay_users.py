@@ -47,7 +47,7 @@ if __name__ == "__main__":
                                 relay_info["fees"]['admission'][0]['amount'] / 1000
                             )
     print(f"Found {len(paid_relays)} relays with fee!")
-    relay_manager = RelayManager(error_threshold=10)
+    relay_manager = RelayManager(error_threshold=10, timeout=5)
     for url in paid_relays.keys():
         relay_manager.add_relay(url)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     )
     subscription_id = uuid.uuid1().hex
     relay_manager.add_subscription_on_all_relays(subscription_id, filters)
-    relay_manager.run_sync(timeout=5)
+    relay_manager.run_sync()
 
     event_messages = relay_manager.message_pool.get_all_events()
     events.add_event(event_messages)

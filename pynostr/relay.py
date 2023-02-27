@@ -17,11 +17,19 @@ class Relay(BaseRelay):
         message_pool: MessagePool,
         io_loop: IOLoop,
         policy: RelayPolicy = RelayPolicy(),
+        timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
     ) -> None:
         super().__init__(
-            url, message_pool, policy, None, None, close_on_eose, message_callback
+            url,
+            message_pool,
+            policy,
+            None,
+            None,
+            timeout,
+            close_on_eose,
+            message_callback,
         )
         self.io_loop = io_loop
         self.running = True
@@ -31,12 +39,12 @@ class Relay(BaseRelay):
         return self.ws is not None and self.ws.protocol is not None
 
     @gen.coroutine
-    def connect(self, timeout=2):
+    def connect(self):
         error = False
         try:
-            if timeout > 0:
+            if self.timeout > 0:
                 self.ws = yield gen.with_timeout(
-                    self.io_loop.time() + timeout,
+                    self.io_loop.time() + self.timeout,
                     websocket_connect(
                         self.url,
                         ping_interval=60,
@@ -77,7 +85,7 @@ class Relay(BaseRelay):
         if error:
             self.error_counter += 1
             if self.error_counter <= self.error_threshold:
-                self.io_loop.call_later(1, self.connect, timeout)
+                self.io_loop.call_later(1, self.connect)
             else:
                 return
         # print(self.request)
