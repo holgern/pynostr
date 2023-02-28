@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .event import Event, EventKind
+from .exception import NIPValidationException
 from .key import PrivateKey, PublicKey
 
 log = logging.getLogger(__name__)
@@ -10,6 +11,8 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class EncryptedDirectMessage:
+    """NIP-04 Encrypted Direct Message."""
+
     pubkey: Optional[str] = None
     recipient_pubkey: Optional[str] = None
     cleartext_content: Optional[str] = None
@@ -33,6 +36,10 @@ class EncryptedDirectMessage:
 
     def to_event(self) -> Event:
         e = Event(kind=EventKind.ENCRYPTED_DIRECT_MESSAGE)
+        if self.encrypted_message is None or "?iv=" not in self.encrypted_message:
+            raise NIPValidationException("Encrypted message is missing!")
+        if self.recipient_pubkey is None:
+            raise NIPValidationException("recipient_pubkey is missing!")
         e.content = self.encrypted_message
         e.pubkey = self.pubkey
         e.add_pubkey_ref(self.recipient_pubkey)

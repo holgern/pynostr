@@ -2,6 +2,7 @@ import unittest
 
 from pynostr.encrypted_dm import EncryptedDirectMessage
 from pynostr.event import Event
+from pynostr.exception import NIPValidationException
 from pynostr.key import PrivateKey
 
 
@@ -25,7 +26,36 @@ class TestEncryptedDirectMessage(unittest.TestCase):
             recipient_pubkey=self.recipient_pubkey,
             cleartext_content="Secret message!",
         )
-        assert ['p', self.recipient_pubkey] in dm.to_event().tags
+        self.assertIn(['p', self.recipient_pubkey], dm.to_event().tags)
+
+    def test_event_e_tag(self):
+        """May generate event 'e' tag."""
+        dm = EncryptedDirectMessage()
+        dm.reference_event_id = "ref_event_id"
+        dm.encrypt(
+            self.sender_pk.hex(),
+            recipient_pubkey=self.recipient_pubkey,
+            cleartext_content="Secret message!",
+        )
+        self.assertIn(['p', self.recipient_pubkey], dm.to_event().tags)
+        self.assertIn(['e', "ref_event_id"], dm.to_event().tags)
+
+    def test_NIP_validation(self):
+        dm = EncryptedDirectMessage()
+        with self.assertRaisesRegex(
+            NIPValidationException, "Encrypted message is missing"
+        ):
+            dm.to_event()
+        dm.encrypt(
+            self.sender_pk.hex(),
+            recipient_pubkey=self.recipient_pubkey,
+            cleartext_content="Secret message!",
+        )
+        dm.recipient_pubkey = None
+        with self.assertRaisesRegex(
+            NIPValidationException, "recipient_pubkey is missing"
+        ):
+            dm.to_event()
 
     def test_encrypt_dm(self):
         """Should encrypt a DM and populate its `content` field with ciphertext that
