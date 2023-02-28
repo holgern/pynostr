@@ -11,6 +11,7 @@ from .message_pool import MessagePool
 from .message_type import RelayMessageType
 from .request import Request
 from .subscription import Subscription
+from .utils import get_relay_information
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class BaseRelay:
     def __init__(
         self,
         url: str,
-        message_pool: MessagePool,
+        message_pool: MessagePool = MessagePool(),
         policy: RelayPolicy = RelayPolicy(),
         ssl_options: dict = None,
         proxy_config: RelayProxyConnectionConfig = None,
@@ -52,6 +53,7 @@ class BaseRelay:
         self.close_on_eose = close_on_eose
         self.lock: Lock = Lock()
         self.ws = None
+        self.metadata = None
         self.subscriptions: dict[str, Subscription] = {}
         self.connected: bool = False
         self.error_counter: int = 0
@@ -74,6 +76,20 @@ class BaseRelay:
             ],
             "request": self.request,
         }
+
+    def update_metadata(self, timeout: float = None) -> None:
+        if timeout is None:
+            timeout = self.timeout
+        self.metadata = get_relay_information(self.url, timeout=timeout, add_url=False)
+
+    def check_nip(self, nip: int) -> bool:
+        if self.metadata is None:
+            self.update_metadata()
+        if self.metadata is None:
+            return False
+        if "supported_nips" not in self.metadata:
+            return False
+        return nip in self.metadata["supported_nips"]
 
     def add_subscription(self, id, filters: FiltersList):
         with self.lock:

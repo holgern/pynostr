@@ -88,7 +88,7 @@ def extract_nip05(nip05: str):
     return check_nip05(nip05_response, name)
 
 
-def get_relay_information(url: str, timeout: float = 2):
+def get_relay_information(url: str, timeout: float = 2, add_url: bool = True):
     headers = {'Accept': 'application/nostr+json', 'User-Agent': 'pynostr'}
     if "wss" in url:
         metadata_uri = url.replace("wss", "https")
@@ -102,7 +102,8 @@ def get_relay_information(url: str, timeout: float = 2):
         response.raise_for_status()
 
         metadata = response.json()
-        metadata["url"] = url
+        if add_url:
+            metadata["url"] = url
         return metadata
     except requests.exceptions.Timeout:
         # Handle a timeout error

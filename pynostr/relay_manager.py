@@ -13,7 +13,6 @@ from .exception import RelayException
 from .filters import FiltersList
 from .message_pool import MessagePool
 from .relay import Relay
-from .utils import get_relay_information
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +40,7 @@ class RelayManager:
         timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
+        get_metadata=True,
     ):
 
         relay = Relay(
@@ -52,10 +52,13 @@ class RelayManager:
             close_on_eose=close_on_eose,
             message_callback=message_callback,
         )
+
         if self.error_threshold is not None:
             relay.error_threshold = self.error_threshold
         if self.timeout is not None:
             relay.timeout = self.timeout
+        if get_metadata:
+            relay.update_metadata()
         self.relays[url] = relay
 
     def remove_relay(self, url: str):
@@ -174,8 +177,10 @@ class RelayManager:
 
         self.publish_message(event.to_message())
 
-    def get_relay_information(self):
+    def get_relay_information(self, update_metadata=False):
         ret = {}
         for url in self.relays:
-            ret[url] = get_relay_information(url)
+            if update_metadata:
+                self.relays[url].update_metadata()
+            ret[url] = self.relays[url].metadata
         return ret
