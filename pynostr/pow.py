@@ -1,5 +1,5 @@
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .event import Event
 from .key import PrivateKey
@@ -99,18 +99,15 @@ class Pow:
 
     def print_results(self):
         if self.mode in ["key", "event"]:
-            print(
-                f"Found event with {self.num_leading_zero_bits} "
-                f"zeros after {self.count} tries"
-            )
+            print(f"Difficulty {self.num_leading_zero_bits} ")
         print(f"avg. hash rate {self.get_hashrate()} guesses per s")
+        print(f"Total tries {self.count} s")
         print(f"Total duration {self.duration} s")
 
 
 @dataclass
 class PowEvent(Pow):
     difficulty: int = 8
-    event: Event = field(default_factory=Event)
 
     def __post_init__(self):
         self.mode = "event"
@@ -120,13 +117,6 @@ class PowEvent(Pow):
         self.reset()
 
     def reset(self):
-        event = Event(
-            content=self.event.content, pubkey=self.event.pubkey, kind=self.event.kind
-        )
-        all_tags = [["nonce", "1", str(self.difficulty)]]
-        all_tags.extend(self.event.tags)
-        event.tags = all_tags
-        self.num_leading_zero_bits, self.event = self.operation(event)
         self.count = 1
         self.duration = 0
         self.results = []
@@ -134,39 +124,80 @@ class PowEvent(Pow):
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
         self.n_pattern = self.difficulty
-        self.event.tags[0][2] = str(self.difficulty)
 
     def increase_difficulty(self):
-        self.set_difficulty(self.num_leading_zero_bits + 1)
+        self.set_difficulty(self.difficulty + 1)
 
-    def mine(self, max_count: int = 0, max_duration: int = 0) -> Event:
+    def get_nonce_tag_pos(self, event: Event):
+        tag_types = event.get_tag_types()
+        tag_pos = 0
+        if "nonce" not in tag_types:
+            return -1
+        for tt in tag_types:
+            if tt == "nonce":
+                break
+            tag_pos += 1
+        return tag_pos
+
+    def calc_difficulty(self, event: Event):
+        tag_pos = self.get_nonce_tag_pos(event)
+        if tag_pos < 0:
+            return 0
+        return count_leading_zero_bits(event.id)
+
+    def check_difficulty(self, event: Event):
+        tag_pos = self.get_nonce_tag_pos(event)
+        if tag_pos < 0:
+            return False
+        return (
+            self.calc_difficulty(event) >= self.difficulty
+            and int(event.tags[tag_pos][2]) >= self.difficulty
+        )
+
+    def mine(self, event: Event, max_count: int = 0, max_duration: int = 0) -> Event:
         start = time.perf_counter()
         count = 0
         duration = 0
-        num_leading_zero_bits = self.num_leading_zero_bits
-        event = self.event
+
+        tag_pos = self.get_nonce_tag_pos(event)
+
+        if tag_pos < 0:
+            all_tags = [["nonce", "1", str(self.difficulty)]]
+            all_tags.extend(event.tags)
+            event.tags = all_tags
+            tag_pos = 0
+        elif event.tags[tag_pos][2] != str(self.difficulty):
+            event.tags[tag_pos][2] = str(self.difficulty)
+            event.tags[tag_pos][1] = "1"
+
+        num_leading_zero_bits, event_pow = self.operation(event)
+        num_leading_zero_bits_pow = num_leading_zero_bits
         while num_leading_zero_bits < self.difficulty and (
             not self._stop_mining(count, max_count, duration, max_duration)
         ):
-            self.count += 1
-            event.tags[0][1] = str(self.count)
+            event.tags[tag_pos][1] = str(int(event.tags[tag_pos][1]) + 1)
             num_leading_zero_bits, event = self.operation(event)
-            if num_leading_zero_bits > self.num_leading_zero_bits:
-                self.event = event
-                self.num_leading_zero_bits = num_leading_zero_bits
+            if num_leading_zero_bits > num_leading_zero_bits_pow:
+                event_pow = event
+                num_leading_zero_bits_pow = num_leading_zero_bits
             count += 1
+            self.count += 1
             duration = time.perf_counter() - start
         end = time.perf_counter()
         self.duration += end - start
-        self.results.append((self.num_leading_zero_bits, self.event))
-        return self.event
+        if len(self.results) == 0:
+            self.results.append((num_leading_zero_bits_pow, event_pow))
+        elif self.results[-1][1].id != event_pow.id:
+            self.results.append((num_leading_zero_bits_pow, event_pow))
+        return event_pow
 
     def get_expected_time(self, hashrate=None) -> float:
         if hashrate is None:
             if self.count > 10000 and self.duration > 0:
                 hashrate = self.get_hashrate()
             else:
-                hashrate = self.estimate_hashrate(event=self.event)
+                event = Event()
+                hashrate = self.estimate_hashrate(event=event)
         self.n_pattern = self.difficulty
         self.n_options = 2
         return self.get_expected_guesses() / hashrate

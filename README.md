@@ -10,13 +10,13 @@
 Python library for for [Nostr](https://github.com/nostr-protocol/nostr).
 
 This library is using coincurve instead of secp256k1, so pynostr can be used on windows. pynostr started as a fork from [python-nostr](https://github.com/jeffthibault/python-nostr)
-and is now independent from python nostr.
+and is now developed on its own.
 
 This library works with python >= 3.7
 
 ## Features
 
-NIPs with a relay-specific implementation are listed here.
+[NIPs](https://github.com/nostr-protocol/nips) with a relay-specific implementation are listed here.
 
 - [x] NIP-01: Basic protocol flow description
 - [x] NIP-02: Contact List and Petnames
@@ -24,13 +24,12 @@ NIPs with a relay-specific implementation are listed here.
 - [x] NIP-04: Encrypted Direct Message
 - [x] NIP-05: Mapping Nostr keys to DNS-based internet identifiers
 - [ ] NIP-06: Basic key derivation from mnemonic seed phrase
-- [ ] NIP-07: window.nostr capability for web browsers
 - [ ] NIP-08: Handling Mentions
 - [ ] NIP-09: Event Deletion
 - [x] NIP-10: Conventions for clients' use of e and p tags in text events
 - [x] NIP-11: Relay Information Document
 - [ ] NIP-12: Generic Tag Queries
-- [ ] NIP-13: Proof of Work
+- [x] NIP-13: Proof of Work
 - [ ] NIP-14: Subject tag in text events.
 - [x] NIP-15: End of Stored Events Notice
 - [ ] NIP-16: Event Treatment
@@ -258,6 +257,15 @@ event = Event(
 event.sign(self.delegatee_pk.hex())
 
 # ...normal broadcast steps...
+```
+**NIP-13: Proof of Work**
+```python
+from pynostr.event import Event
+from pynostr.pow import PowEvent
+pe = PowEvent(difficulty=25)
+e=Event()
+e=pe.mine(e)
+assert pe.check_difficulty(e)
 ```
 
 ## Test Suite

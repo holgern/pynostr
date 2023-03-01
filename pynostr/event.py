@@ -129,7 +129,7 @@ class Event:
         """Returns all tags of given type as list."""
         ret = []
         for tag in self.tags:
-            if not tag and len(tag) < 2:
+            if not tag:
                 continue
             if tag[0] == tag_type:
                 ret.append(tag[1])
@@ -153,13 +153,13 @@ class Event:
                 count += 1
         return count
 
-    def bech32(self) -> str:
+    def bech32(self, prefix: str = "note") -> str:
         """bech32-encoded entities (N-19)
 
         :return: note id as bech32 encoding with note prefix
         """
         self.compute_id()
-        return bech32_encode(binascii.unhexlify(self.id), "note")
+        return bech32_encode(binascii.unhexlify(self.id), prefix)
 
     def sign(self, private_key_hex: str) -> None:
         """signs the event with the private key and stored the signature in self.sig.
@@ -203,8 +203,7 @@ class Event:
         )
 
     def __repr__(self):
-        note_id = self.bech32()
-        return f'Event({note_id[:10]}...{note_id[-10:]})'
+        return f'Event({self.id[:10]}...{self.id[-10:]})'
 
     def __str__(self):
         return self.to_message()
