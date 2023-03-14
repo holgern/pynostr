@@ -42,6 +42,7 @@ class RelayManager:
         timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
+        message_callback_url=False,
         get_metadata=False,
     ):
 
@@ -53,6 +54,7 @@ class RelayManager:
             timeout=timeout,
             close_on_eose=close_on_eose,
             message_callback=message_callback,
+            message_callback_url=message_callback_url,
         )
 
         if self.error_threshold is not None:
@@ -76,6 +78,7 @@ class RelayManager:
         timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
+        message_callback_url=False,
         get_metadata=False,
     ):
         for relay in relay_list:
@@ -85,6 +88,7 @@ class RelayManager:
                 timeout=timeout,
                 close_on_eose=close_on_eose,
                 message_callback=message_callback,
+                message_callback_url=message_callback_url,
                 get_metadata=get_metadata,
             )
 

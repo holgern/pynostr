@@ -95,6 +95,8 @@ def get_public_key(identity_str: str):
         identity = PublicKey.from_npub(identity_str)
     elif "@" in identity_str:
         nip05 = extract_nip05(identity_str)
+        if nip05 is None or len(nip05) == 0:
+            return None
         identity = PublicKey.from_hex(nip05[0])
     else:
         identity = PublicKey.from_hex(identity_str)

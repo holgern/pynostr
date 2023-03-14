@@ -53,6 +53,7 @@ class BaseRelay:
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
+        message_callback_url=False,
     ) -> None:
         self.url = url
         self.policy = policy
@@ -71,6 +72,7 @@ class BaseRelay:
         self.timeout_error_threshold: int = 10
         self.num_sent_events: int = 0
         self.message_callback = message_callback
+        self.message_callback_url = message_callback_url
         self.outgoing_messages = Queue()
 
     def __repr__(self):
@@ -120,7 +122,10 @@ class BaseRelay:
         if self._is_valid_message(message):
             message_json = json.loads(message)
             if self.message_callback is not None:
-                self.message_callback(message_json)
+                if self.message_callback_url:
+                    self.message_callback(message_json, self.url)
+                else:
+                    self.message_callback(message_json)
             message_type = message_json[0]
             if message_type == RelayMessageType.EVENT:
                 # event = Event.from_dict(message_json[2])

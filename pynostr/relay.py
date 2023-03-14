@@ -20,6 +20,7 @@ class Relay(BaseRelay):
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
+        message_callback_url=False,
     ) -> None:
         super().__init__(
             url,
@@ -28,6 +29,7 @@ class Relay(BaseRelay):
             timeout,
             close_on_eose,
             message_callback,
+            message_callback_url,
         )
         self.ws = None
         self.io_loop = io_loop
