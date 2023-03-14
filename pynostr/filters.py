@@ -19,6 +19,15 @@ class Filters:
 
     # promoted to explicit support
     Filters(hashtag_refs=[hashtags])
+
+    :param ids: List[str]
+    :param kinds: List[EventKind]
+    :param authors: List[str]
+    :param since: int
+    :param until: int
+    :param event_refs: List[str]
+    :param pubkey_refs: List[str]
+    :param limit: int
     """
 
     ids: Optional[List[str]] = None
@@ -50,7 +59,7 @@ class Filters:
         self.tags[tag_key] = values
 
     @classmethod
-    def from_json(cls, filters):
+    def from_dict(cls, filters):
         if "ids" in filters:
             ret = cls(filters["ids"])
         else:
@@ -116,7 +125,7 @@ class Filters:
 
         return True
 
-    def to_json_object(self) -> dict:
+    def to_dict(self) -> dict:
         res = {}
         if self.ids is not None:
             res["ids"] = self.ids
@@ -137,11 +146,22 @@ class Filters:
             res.update(self.tags)
         return res
 
+    def __eq__(self, other):
+        if isinstance(other, Event):
+            return self.matches(other)
+        elif isinstance(other, Filters):
+            return self.to_dict() == other.to_dict()
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.to_dict())
+
     def __repr__(self):
-        return f'Filters({self.to_json_object()})'
+        return f'Filters({self.to_dict()})'
 
     def __str__(self):
-        return json.dumps(self.to_json_object())
+        return json.dumps(self.to_dict())
 
 
 class FiltersList(UserList):
@@ -155,12 +175,37 @@ class FiltersList(UserList):
                 return True
         return False
 
+    @classmethod
+    def from_json_array(cls, filters_array):
+        ret = cls()
+        for filters in filters_array:
+            ret.append(Filters.from_dict(filters))
+        return ret
+
     def to_json_array(self) -> list:
         """Convert the data of the object to a json array."""
-        return [filters.to_json_object() for filters in self.data]
+        return [filters.to_dict() for filters in self.data]
+
+    def append(self, value):
+        self.data.append(value)
 
     def __repr__(self):
         return f'FilterList({self.to_json_array()})'
 
     def __str__(self):
         return json.dumps(self.to_json_array())
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __iter__(self):
+        return self.data.__iter__()
+
+    def __contains__(self, item):
+        return item in self.data

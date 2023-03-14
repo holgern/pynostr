@@ -102,10 +102,14 @@ class TestFilters(unittest.TestCase):
             ids=[self.pk1_thread[0].id],
         )
         self.assertTrue(filters.matches(self.pk1_thread[0]))
+        self.assertEqual(filters, self.pk1_thread[0])
 
         # None of the others should match
         for event in self.pk1_thread[1:] + self.pk2_thread + self.pk1_pk2_dms[1:]:
             self.assertFalse(filters.matches(event))
+            self.assertNotEqual(filters, event)
+        filter_copy = Filters.from_dict(filters.to_dict())
+        self.assertEqual(filter_copy.ids, filters.ids)
 
     def test_multiple_values_in_same_tag(self):
         """Should treat multiple tag values as OR searches."""
@@ -146,6 +150,9 @@ class TestFilters(unittest.TestCase):
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
             self.assertTrue(filters.matches(event))
 
+        filter_copy = Filters.from_dict(filters.to_dict())
+        self.assertEqual(filter_copy.kinds, filters.kinds)
+
     def test_match_by_authors(self):
         """Should match Events by author."""
         filters = Filters(authors=[self.pk1.public_key.hex()])
@@ -166,6 +173,9 @@ class TestFilters(unittest.TestCase):
         ]:
             self.assertFalse(filters.matches(event))
 
+        filter_copy = Filters.from_dict(filters.to_dict())
+        self.assertEqual(filter_copy.authors, filters.authors)
+
     def test_match_by_event_refs(self):
         """Should match Events by event_ref 'e' tags."""
         filters = Filters(
@@ -180,17 +190,20 @@ class TestFilters(unittest.TestCase):
         for event in [self.pk1_thread[0]] + self.pk2_thread + self.pk1_pk2_dms:
             self.assertFalse(filters.matches(event))
 
+        filter_copy = Filters.from_dict(filters.to_dict())
+        self.assertEqual(filter_copy.event_refs, filters.event_refs)
+
     def test_match_by_pubkey_refs(self):
         """Should match Events by pubkey_ref 'p' tags."""
-        filter = Filters(
+        filters = Filters(
             pubkey_refs=[self.pk1_thread[0].pubkey],
         )
 
         # pk2's reply in pk1's thread should match
-        self.assertTrue(filter.matches(self.pk1_thread[1]))
+        self.assertTrue(filters.matches(self.pk1_thread[1]))
 
         # pk2's DM reply to pk1 should match
-        self.assertTrue(filter.matches(self.pk1_pk2_dms[1]))
+        self.assertTrue(filters.matches(self.pk1_pk2_dms[1]))
 
         # Everything else should not match
         for event in (
@@ -198,7 +211,10 @@ class TestFilters(unittest.TestCase):
             + self.pk2_thread
             + [self.pk1_pk2_dms[0]]
         ):
-            self.assertFalse(filter.matches(event))
+            self.assertFalse(filters.matches(event))
+
+        filter_copy = Filters.from_dict(filters.to_dict())
+        self.assertEqual(filter_copy.pubkey_refs, filters.pubkey_refs)
 
     def test_match_by_arbitrary_single_letter_tag(self):
         """Should match NIP-12 arbitrary single-letter tags."""
@@ -390,31 +406,31 @@ class TestFilters(unittest.TestCase):
     def test_event_refs_json(self):
         """Should insert event_refs as "#e" in json."""
         filters = Filters(event_refs=["some_event_id"])
-        self.assertIn("#e", filters.to_json_object().keys())
-        self.assertNotIn("e", filters.to_json_object().keys())
+        self.assertIn("#e", filters.to_dict().keys())
+        self.assertNotIn("e", filters.to_dict().keys())
 
     def test_pubkey_refs_json(self):
         """Should insert pubkey_refs as "#p" in json."""
         filters = Filters(pubkey_refs=["some_pubkey"])
-        self.assertIn("#p", filters.to_json_object().keys())
-        self.assertNotIn("p", filters.to_json_object().keys())
+        self.assertIn("#p", filters.to_dict().keys())
+        self.assertNotIn("p", filters.to_dict().keys())
 
     def test_arbitrary_single_letter_json(self):
         """Should prefix NIP-12 arbitrary single-letter tags with "#" in json."""
         filters = Filters()
         filters.add_arbitrary_tag('x', ["oranges"])
-        self.assertIn("#x", filters.to_json_object().keys())
-        self.assertNotIn("x", filters.to_json_object().keys())
+        self.assertIn("#x", filters.to_dict().keys())
+        self.assertNotIn("x", filters.to_dict().keys())
 
     def test_arbitrary_multi_letter_json(self):
         """Should include arbitrary multi-letter tags as-is in json."""
         filters = Filters()
         filters.add_arbitrary_tag('foo', ["bar"])
-        self.assertIn("foo", filters.to_json_object().keys())
+        self.assertIn("foo", filters.to_dict().keys())
 
 
 # Inherit from TestFilter to get all the same test data
-class TestFilterRequest(TestFilters):
+class TestFiltersList(TestFilters):
     def test_match_by_authors_or_pubkey_refs(self):
         """Should match on authors or pubkey_refs."""
         # Typical filters for anything sent by or to a pubkey
@@ -433,3 +449,7 @@ class TestFilterRequest(TestFilters):
         # Should not match anything in pk2's solo thread
         self.assertFalse(filtersList.match(self.pk2_thread[0]))
         self.assertFalse(filtersList.match(self.pk2_thread[1]))
+
+        filtersList_copy = FiltersList.from_json_array(filtersList.to_json_array())
+        self.assertEqual(filtersList_copy[0].authors, filter1.authors)
+        self.assertEqual(filtersList_copy[1].pubkey_refs, filter2.pubkey_refs)

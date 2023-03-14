@@ -7,6 +7,7 @@ from pynostr.utils import (
     bech32_decode,
     bech32_encode,
     check_nip05,
+    get_public_key,
     nprofile_decode,
     nprofile_encode,
     split_nip05,
@@ -105,3 +106,10 @@ class TestUtils(unittest.TestCase):
         pubkey, relays = check_nip05(nip05_response, "test")
         self.assertEqual(pubkey, None)
         self.assertEqual(relays, None)
+
+    def test_get_public_key(self):
+        npub = "npub180cvv07tjdrrgpa0j7j7tmnyl2yr6yr7l8j4s3evf6u64th6gkwsyjh6w6"
+        pub_key = "3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d"
+        pk1 = get_public_key(npub)
+        pk2 = get_public_key(pub_key)
+        self.assertEqual(pk1, pk2)

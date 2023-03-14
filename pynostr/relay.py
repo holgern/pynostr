@@ -23,14 +23,13 @@ class Relay(BaseRelay):
     ) -> None:
         super().__init__(
             url,
-            message_pool,
             policy,
-            None,
-            None,
+            message_pool,
             timeout,
             close_on_eose,
             message_callback,
         )
+        self.ws = None
         self.io_loop = io_loop
         self.running = True
 
@@ -41,6 +40,9 @@ class Relay(BaseRelay):
     @gen.coroutine
     def connect(self):
         error = False
+        timeout_error = False
+        self.error_counter = 0
+        self.timeout_error_counter = 0
         try:
             if self.timeout > 0:
                 self.ws = yield gen.with_timeout(
@@ -59,7 +61,6 @@ class Relay(BaseRelay):
                 )
             self.connected = True
             # yield self.ws.write_message(self.request)
-            self.publish(self.request)
             # self.io_loop.call_later(1, self.send_message, self.request)
             while True:
                 if self.outgoing_messages.qsize() > 0:
@@ -74,8 +75,8 @@ class Relay(BaseRelay):
                     break
 
         except gen.TimeoutError:
-            log.warning(f"Timeout connecting to {self.url}")
-            error = True
+            log.info(f"Timeout connecting to {self.url}")
+            timeout_error = True
         except WebSocketError as e:
             log.warning(f"Error connecting to WebSocket server at {self.url}: {e}")
             error = True
@@ -88,14 +89,25 @@ class Relay(BaseRelay):
                 self.io_loop.call_later(1, self.connect)
             else:
                 return
-        # print(self.request)
-        # self.publish(self.request)
+        elif timeout_error:
+            self.timeout_error_counter += 1
+            if self.timeout_error_counter <= self.timeout_error_threshold:
+                self.io_loop.call_later(1, self.connect)
+            else:
+                return
 
         log.info(f"WebSocket connection to {self.url} closed")
 
     def _eose_received(self):
-        if self.close_on_eose:
+        self.eose_counter += 1
+        if self.close_on_eose and self.eose_counter >= self.eose_threshold:
             self.close()
+
+    @gen.coroutine
+    def on_error(self):
+        self.error_counter += 1
+        if self.error_counter > self.error_threshold:
+            yield self.close()
 
     @gen.coroutine
     def start(self):
@@ -106,5 +118,6 @@ class Relay(BaseRelay):
         if self.ws is not None:
             self.connected = False
             self.error_counter = 0
+            self.timeout_error_counter = 0
             yield self.ws.close()
             # self.io_loop.stop()

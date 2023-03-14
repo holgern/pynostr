@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+import datetime
 import json
 from dataclasses import dataclass
 from queue import Queue
@@ -160,10 +161,29 @@ class EventMessageStore:
         else:
             self.eventMessages.append(event)
 
-    def get_newest_event(self):
+    def get_newest_event(self, url=None):
         if not self.eventMessages:
             return None
-        return max(self.eventMessages, key=lambda x: x.event.date_time())
+        if url is None:
+            return max(self.eventMessages, key=lambda x: x.event.date_time())
+        else:
+            timestamp0 = datetime.datetime.fromtimestamp(0)
+            return max(
+                self.eventMessages,
+                key=lambda x: x.event.date_time() if x.url == url else timestamp0,
+            )
+
+    def get_oldest_event(self, url=None):
+        if not self.eventMessages:
+            return None
+        if url is None:
+            return min(self.eventMessages, key=lambda x: x.event.date_time())
+        else:
+            now = datetime.datetime.now()
+            return min(
+                self.eventMessages,
+                key=lambda x: x.event.date_time() if x.url == url else now,
+            )
 
     def get_events_by_url(self, url):
         return [event for event in self.eventMessages if event.url == url]

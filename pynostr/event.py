@@ -78,6 +78,14 @@ class Event:
     def compute_id(self):
         self.id = sha256(self.serialize()).hexdigest()
 
+    def __eq__(self, other):
+        self.compute_id()
+        return isinstance(other, Event) and self.id == other.id
+
+    def __hash__(self):
+        self.compute_id()
+        return hash(self.id)
+
     @classmethod
     def from_dict(cls, msg: dict) -> 'Event':
         # "id" is ignore, as it will be computed from the contents
@@ -90,32 +98,46 @@ class Event:
             sig=msg['sig'],
         )
 
-    def add_pubkey_ref(self, pubkey: str):
-        """Adds a reference to a pubkey as a 'p' tag."""
-        self.tags.append(['p', pubkey])
+    def add_tag(self, tag_type: str, tag_content):
+        if isinstance(tag_content, list):
+            self.tags.append([tag_type] + tag_content)
+        else:
+            self.tags.append([tag_type, tag_content])
         self.compute_id()
 
-    def has_pubkey_ref(self, pubkey: str):
+    def has_tag(self, tag_type: str, tag_content):
         for tag in self.tags:
             if not tag and len(tag) < 2:
                 continue
-            if tag[0] == 'p' and tag[1] == pubkey:
+            if tag[0] == tag_type and tag[1] == tag_content:
+                return True
+            elif tag[0] == tag_type and tag[1:] == tag_content:
                 return True
         return False
+
+    def clear_tags(self, tag_type: str):
+        self.tags = [s for s in self.tags if s[0] != tag_type]
+
+    def remove_tag(self, tag_type: str, tag_content):
+        if isinstance(tag_content, list):
+            self.tags.remove([tag_type] + tag_content)
+        else:
+            self.tags.remove([tag_type, tag_content])
+
+    def add_pubkey_ref(self, pubkey: str):
+        """Adds a reference to a pubkey as a 'p' tag."""
+        self.add_tag('p', pubkey)
+
+    def has_pubkey_ref(self, pubkey: str):
+        return self.has_tag('p', pubkey)
 
     def add_event_ref(self, event_id: str):
         """Adds a reference to an event_id as an 'e' tag."""
-        self.tags.append(['e', event_id])
-        self.compute_id()
+        self.add_tag('e', event_id)
 
     def has_event_ref(self, event_id: str):
         """Check if a e tag to the given event_id exists."""
-        for tag in self.tags:
-            if not tag and len(tag) < 2:
-                continue
-            if tag[0] == 'e' and tag[1] == event_id:
-                return True
-        return False
+        return self.has_tag('e', event_id)
 
     def get_tag_dict(self):
         """Returns all tags as dict."""
@@ -131,8 +153,8 @@ class Event:
         for tag in self.tags:
             if not tag:
                 continue
-            if tag[0] == tag_type:
-                ret.append(tag[1])
+            if tag[0] == tag_type and len(tag) > 1:
+                ret.append(tag[1:])
         return ret
 
     def get_tag_types(self):
@@ -149,7 +171,7 @@ class Event:
         """Returns all tags of given type as list."""
         count = 0
         for tag in self.tags:
-            if len(tag) > 0 and tag[0] == tag_type:
+            if len(tag) > 1 and tag[0] == tag_type:
                 count += 1
         return count
 

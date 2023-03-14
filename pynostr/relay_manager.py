@@ -13,6 +13,7 @@ from .exception import RelayException
 from .filters import FiltersList
 from .message_pool import MessagePool
 from .relay import Relay
+from .relay_list import RelayList
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class RelayManager:
     """
 
     error_threshold: Optional[int] = None
+    timeout_error_threshold: Optional[int] = None
     timeout: Optional[float] = None
 
     def __post_init__(self):
@@ -40,7 +42,7 @@ class RelayManager:
         timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
-        get_metadata=True,
+        get_metadata=False,
     ):
 
         relay = Relay(
@@ -55,6 +57,8 @@ class RelayManager:
 
         if self.error_threshold is not None:
             relay.error_threshold = self.error_threshold
+        if self.timeout_error_threshold is not None:
+            relay.timeout_error_threshold = self.timeout_error_threshold
         if self.timeout is not None:
             relay.timeout = self.timeout
         if get_metadata:
@@ -65,6 +69,24 @@ class RelayManager:
         if url in self.relays:
             relay = self.relays.pop(url)
             relay.close()
+
+    def add_relay_list(
+        self,
+        relay_list: RelayList,
+        timeout=2,
+        close_on_eose: bool = True,
+        message_callback=None,
+        get_metadata=False,
+    ):
+        for relay in relay_list:
+            self.add_relay(
+                relay.url,
+                relay.policy,
+                timeout=timeout,
+                close_on_eose=close_on_eose,
+                message_callback=message_callback,
+                get_metadata=get_metadata,
+            )
 
     def remove_closed_relays(self):
         for url, connected in self.connection_statuses.items():
@@ -104,9 +126,11 @@ class RelayManager:
                 try:
                     yield future
                 except gen.TimeoutError:
-                    log.warning(
+                    log.info(
                         f"Connection to WebSocket client {relays[i].url} timed out"
                     )
+                    # relays[i].on_error()
+
         elif len(futures) > 0:
             yield gen.multi(futures)
         raise gen.Return(relays)

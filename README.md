@@ -39,7 +39,7 @@ This library works with python >= 3.7
 - [ ] NIP-22: Event created_at Limits
 - [ ] NIP-23: Long-form Content
 - [ ] NIP-25: Reactions
-- [ ] NIP-26: Delegated Event Signing
+- [x] NIP-26: Delegated Event Signing
 - [ ] NIP-28: Public Chat
 - [ ] NIP-33: Parameterized Replaceable Events
 - [ ] NIP-36: Sensitive Content
@@ -50,7 +50,7 @@ This library works with python >= 3.7
 - [x] NIP-56: Reporting
 - [ ] NIP-57: Lightning Zaps
 - [ ] NIP-58: Badges
-- [ ] NIP-65: Relay List Metadata
+- [x] NIP-65: Relay List Metadata
 
 ## Differences from python-nostr
 

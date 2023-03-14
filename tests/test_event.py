@@ -25,6 +25,18 @@ class TestEvent(unittest.TestCase):
         )
         self.assertTrue(event.verify())
 
+    def test_event_hash(self):
+        event1 = Event("Hello Nostr!", self.sender_pubkey)
+        event2 = Event("Hello Nostr!", self.sender_pubkey)
+        event1.created_at = event2.created_at
+        event_set = {event1, event2}
+        self.assertEqual(len(event_set), 1)
+        event1 = Event("Hello Nostr!", self.sender_pubkey)
+        event2 = Event("Hello Nostr", self.sender_pubkey)
+        event1.created_at = event2.created_at
+        event_set = {event1, event2}
+        self.assertEqual(len(event_set), 2)
+
     def test_event_default_time(self):
         public_key = PrivateKey().public_key.hex()
         event1 = Event(pubkey=public_key, content='test event')
@@ -39,10 +51,10 @@ class TestEvent(unittest.TestCase):
         self.assertTrue(['e', some_event_id] in event.tags)
         self.assertEqual(event.get_tag_count('e'), 1)
         self.assertEqual(event.get_tag_count('p'), 0)
-        self.assertEqual(event.get_tag_list('e'), [some_event_id])
+        self.assertEqual(event.get_tag_list('e'), [[some_event_id]])
         self.assertEqual(event.get_tag_list('p'), [])
         self.assertEqual(event.get_tag_types(), ['e'])
-        self.assertEqual(event.get_tag_dict(), {"e": [some_event_id]})
+        self.assertEqual(event.get_tag_dict(), {"e": [[some_event_id]]})
         self.assertTrue(event.has_event_ref(some_event_id))
 
     def test_add_pubkey_ref(self):
@@ -52,11 +64,42 @@ class TestEvent(unittest.TestCase):
         self.assertTrue(['p', some_pubkey] in event.tags)
         self.assertEqual(event.get_tag_count('p'), 1)
         self.assertEqual(event.get_tag_count('e'), 0)
-        self.assertEqual(event.get_tag_list('p'), [some_pubkey])
+        self.assertEqual(event.get_tag_list('p'), [[some_pubkey]])
         self.assertEqual(event.get_tag_list('e'), [])
         self.assertEqual(event.get_tag_types(), ['p'])
-        self.assertEqual(event.get_tag_dict(), {"p": [some_pubkey]})
+        self.assertEqual(event.get_tag_dict(), {"p": [[some_pubkey]]})
         self.assertTrue(event.has_pubkey_ref(some_pubkey))
+
+    def test_add_identity_tag(self):
+        ident = ["a:b", "c"]
+        event = Event(content="Adding a 'i' tag")
+        event.add_tag("i", ident)
+        self.assertTrue((['i'] + ident) in event.tags)
+        self.assertEqual(event.get_tag_count('i'), 1)
+        self.assertEqual(event.get_tag_count('e'), 0)
+        self.assertEqual(event.get_tag_list('i'), [ident])
+        self.assertEqual(event.get_tag_list('e'), [])
+        self.assertEqual(event.get_tag_types(), ['i'])
+        self.assertEqual(event.get_tag_dict(), {"i": [ident]})
+
+    def test_clear_tags(self):
+        some_pubkey = "some_pubkey"
+        some_event_id = "some_event_id"
+        event = Event(content="Adding different tags")
+        event.add_tag('p', some_pubkey)
+        event.add_tag('e', some_event_id)
+        event.add_tag('i', ["a:b", "c"])
+        self.assertEqual(event.get_tag_count("p"), 1)
+        self.assertEqual(event.get_tag_count("e"), 1)
+        self.assertEqual(event.get_tag_count("i"), 1)
+        event.clear_tags("i")
+        self.assertEqual(event.get_tag_count("e"), 1)
+        event.clear_tags("e")
+        self.assertEqual(event.get_tag_count("p"), 1)
+        event.clear_tags("p")
+        self.assertEqual(event.get_tag_count("p"), 0)
+        self.assertEqual(event.get_tag_count("e"), 0)
+        self.assertEqual(event.get_tag_count("i"), 0)
 
     def test_sign_event_is_valid(self):
         """Sign should create a signature that can be verified against Event.id."""

@@ -9,7 +9,6 @@ from .event import Event
 from .filters import FiltersList
 from .message_pool import MessagePool
 from .message_type import RelayMessageType
-from .request import Request
 from .subscription import Subscription
 from .utils import get_relay_information
 
@@ -18,11 +17,24 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class RelayPolicy:
+    """Relay Read/Write policy.
+
+    :param should_read: bool
+    :param should_write: bool
+    """
+
     should_read: bool = True
     should_write: bool = True
 
-    def to_json_object(self) -> Dict[str, bool]:
+    @classmethod
+    def from_dict(cls, msg: dict) -> 'RelayPolicy':
+        return RelayPolicy(should_read=msg["read"], should_write=msg["write"])
+
+    def to_dict(self) -> Dict[str, bool]:
         return {"read": self.should_read, "write": self.should_write}
+
+    def __str__(self):
+        return str(self.to_dict())
 
 
 @dataclass
@@ -36,45 +48,41 @@ class BaseRelay:
     def __init__(
         self,
         url: str,
+        policy: RelayPolicy,
         message_pool: MessagePool = MessagePool(),
-        policy: RelayPolicy = RelayPolicy(),
-        ssl_options: dict = None,
-        proxy_config: RelayProxyConnectionConfig = None,
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
     ) -> None:
         self.url = url
-        self.message_pool = message_pool
         self.policy = policy
-        self.ssl_options = ssl_options
-        self.proxy_config = proxy_config
+        self.message_pool = message_pool
         self.timeout = timeout
         self.close_on_eose = close_on_eose
         self.lock: Lock = Lock()
-        self.ws = None
         self.metadata = None
         self.subscriptions: dict[str, Subscription] = {}
         self.connected: bool = False
+        self.eose_counter: int = 0
+        self.eose_threshold: int = 0
         self.error_counter: int = 0
-        self.error_threshold: int = 10
+        self.error_threshold: int = 3
+        self.timeout_error_counter: int = 0
+        self.timeout_error_threshold: int = 10
         self.num_sent_events: int = 0
-        self.request: str = ""
         self.message_callback = message_callback
         self.outgoing_messages = Queue()
 
     def __repr__(self):
-        return json.dumps(self.to_json_object(), indent=2)
+        return json.dumps(self.to_dict(), indent=2)
 
-    def to_json_object(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "url": self.url,
-            "policy": self.policy.to_json_object(),
+            "policy": self.policy.to_dict(),
             "subscriptions": [
-                subscription.to_json_object()
-                for subscription in self.subscriptions.values()
+                subscription.to_dict() for subscription in self.subscriptions.values()
             ],
-            "request": self.request,
         }
 
     def update_metadata(self, timeout: float = None) -> None:
@@ -94,7 +102,8 @@ class BaseRelay:
     def add_subscription(self, id, filters: FiltersList):
         with self.lock:
             self.subscriptions[id] = Subscription(id, filters)
-            self.request = Request(id, filters).to_message()
+            self.publish(self.subscriptions[id].to_message())
+            self.eose_threshold += 1
 
     def close_subscription(self, id: str) -> None:
         with self.lock:
@@ -104,7 +113,8 @@ class BaseRelay:
         with self.lock:
             subscription = self.subscriptions[id]
             subscription.filters = filters
-            self.request = Request(id, filters).to_message()
+            self.eose_threshold += 1
+            self.publish(self.subscriptions[id].to_message())
 
     def _on_message(self, message):
         if self._is_valid_message(message):
@@ -128,6 +138,7 @@ class BaseRelay:
         self.outgoing_messages.put(message)
 
     def _eose_received(self):
+        self.eose_counter += 1
         return
 
     def _is_valid_message(self, message: str) -> bool:

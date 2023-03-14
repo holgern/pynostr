@@ -18,7 +18,9 @@ class WebSocketRelay(BaseRelay):
         ssl_options: dict = None,
         proxy_config: Union[None, RelayProxyConnectionConfig] = None,
     ) -> None:
-        super().__init__(url, message_pool, policy, ssl_options, proxy_config)
+        super().__init__(url, policy, message_pool)
+        self.ssl_options = ssl_options
+        self.proxy_config = proxy_config
         self.ws: WebSocketApp = WebSocketApp(
             self.url,
             on_open=self._on_open,

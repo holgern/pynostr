@@ -11,11 +11,11 @@ from pynostr.base_relay import RelayPolicy
 from pynostr.encrypted_dm import EncryptedDirectMessage
 from pynostr.event import Event, EventKind
 from pynostr.filters import Filters, FiltersList
-from pynostr.key import PrivateKey, PublicKey
+from pynostr.key import PrivateKey
 from pynostr.message_pool import MessagePool
 from pynostr.message_type import RelayMessageType
 from pynostr.relay import Relay
-from pynostr.utils import extract_nip05, get_timestamp
+from pynostr.utils import get_public_key, get_timestamp
 
 
 @gen.coroutine
@@ -47,16 +47,11 @@ if __name__ == "__main__":
     print(f"New dm are sent from: {sender_pk.public_key.bech32()}")
 
     recipient_str = input("recipient (npub or nip05): ")
-    recipient = ""
-    if "@" in recipient_str:
-        nip05 = extract_nip05(recipient_str)
-        recipient = PublicKey.from_hex(nip05[0])
-    elif "npub" in recipient_str:
-        recipient = PublicKey.from_hex(recipient_str)
+    recipient = get_public_key(recipient_str)
     if recipient != "":
         print(f"recipient is set to {recipient.bech32()}")
     else:
-        raise Exception("reciever not valed")
+        raise Exception("reciever not valid")
     relay_url = input("relay: ")
 
     dm = EncryptedDirectMessage()

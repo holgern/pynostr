@@ -36,13 +36,13 @@ def split_nip05(nip05):
     return name, url
 
 
-def get_nip05_response(name, url):
+def get_nip05_response(name, url, timeout=1):
     if url is None:
         return {}
     request_url = f"https://{url}/.well-known/nostr.json?name={name}"
     try:
         response = requests.get(
-            request_url, headers={'User-Agent': 'pynostr'}, timeout=5
+            request_url, headers={'User-Agent': 'pynostr'}, timeout=timeout
         )
 
         response.raise_for_status()
@@ -63,7 +63,7 @@ def get_nip05_response(name, url):
 
 
 def check_nip05(nip05_response: dict, name: str):
-    if len(nip05_response) == 0:
+    if nip05_response is None or len(nip05_response) == 0:
         return
     if "names" in nip05_response:
         if name in nip05_response["names"]:
@@ -88,6 +88,19 @@ def extract_nip05(nip05: str):
     return check_nip05(nip05_response, name)
 
 
+def get_public_key(identity_str: str):
+    from pynostr.key import PublicKey
+
+    if "npub" in identity_str:
+        identity = PublicKey.from_npub(identity_str)
+    elif "@" in identity_str:
+        nip05 = extract_nip05(identity_str)
+        identity = PublicKey.from_hex(nip05[0])
+    else:
+        identity = PublicKey.from_hex(identity_str)
+    return identity
+
+
 def get_relay_information(url: str, timeout: float = 2, add_url: bool = True):
     headers = {'Accept': 'application/nostr+json', 'User-Agent': 'pynostr'}
     if "wss" in url:
@@ -107,15 +120,15 @@ def get_relay_information(url: str, timeout: float = 2, add_url: bool = True):
         return metadata
     except requests.exceptions.Timeout:
         # Handle a timeout error
-        log.warning("Request timed out. Please try again later.")
+        log.info("Request timed out. Please try again later.")
 
     except requests.exceptions.HTTPError as err:
         # Handle an HTTP error
-        log.warning(f"HTTP error occurred: {err}")
+        log.info(f"HTTP error occurred: {err}")
 
     except requests.exceptions.RequestException as err:
         # Handle any other request exception
-        log.warning(f"An error occurred: {err}")
+        log.info(f"An error occurred: {err}")
 
 
 def nprofile_decode(nprofile: str):
@@ -156,7 +169,7 @@ def get_timestamp(days=0, seconds=0, minutes=0, hours=0, weeks=0):
 def get_relay_list(relay_type="online", nip=None, timeout=5):
     """Uses the API from https://api.nostr.watch/
 
-    :param relay_type: can be online, offline or nip
+    :param relay_type: can be online, public, paid, offline or nip
     :param nip: is used when relay_type is set to nip
     """
     headers = {'User-Agent': 'pynostr'}

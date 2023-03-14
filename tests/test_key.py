@@ -10,6 +10,8 @@ class TestPrivateKey(unittest.TestCase):
         pk1 = PrivateKey()
         pk2 = PrivateKey(pk1.raw_secret)
         self.assertEqual(pk1, pk2)
+        pk_set = {pk1, pk2}
+        self.assertEqual(len(pk_set), 1)
 
     def test_eq_false(self):
         """__eq__ should return False when PrivateKeys are not equal."""
@@ -17,6 +19,8 @@ class TestPrivateKey(unittest.TestCase):
         pk2 = PrivateKey()
         self.assertNotEqual(pk1.raw_secret, pk2.raw_secret)
         self.assertNotEqual(pk1, pk2)
+        pk_set = {pk1, pk2}
+        self.assertEqual(len(pk_set), 2)
 
     def test_from_nsec(self):
         """PrivateKey.from_nsec should yield the source's raw_secret."""

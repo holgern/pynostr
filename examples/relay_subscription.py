@@ -10,10 +10,9 @@ from tornado import gen
 from pynostr.base_relay import RelayPolicy
 from pynostr.event import EventKind
 from pynostr.filters import Filters, FiltersList
-from pynostr.key import PublicKey
 from pynostr.message_pool import MessagePool
 from pynostr.relay import Relay
-from pynostr.utils import extract_nip05
+from pynostr.utils import get_public_key
 
 if __name__ == "__main__":
 
@@ -21,15 +20,8 @@ if __name__ == "__main__":
 
     input_str = input("author (npub or nip05): ")
     recipient = ""
-    if "@" in input_str:
-        nip05 = extract_nip05(input_str)
-        author = PublicKey.from_hex(nip05[0])
-    elif "npub" in input_str:
-        author = PublicKey.from_hex(input_str)
-    if author != "":
-        print(f"author is set to {author.bech32()}")
-    else:
-        raise Exception("reciever not valed")
+    author = get_public_key(input_str)
+
     relay_url = input("relay: ")
 
     filters = FiltersList(

@@ -59,6 +59,12 @@ class PublicKey:
         pubkey = self.bech32()
         return f'PublicKey({pubkey[:10]}...{pubkey[-10:]})'
 
+    def __eq__(self, other):
+        return isinstance(other, PublicKey) and self.raw_bytes == other.raw_bytes
+
+    def __hash__(self):
+        return hash(self.raw_bytes)
+
     def __str__(self):
         """Return public key in hex form
         :return: string
@@ -108,6 +114,12 @@ class PrivateKey:
     @property
     def nsec(self):
         return self.bech32()
+
+    def __hash__(self):
+        return hash(self.raw_secret)
+
+    def __eq__(self, other):
+        return isinstance(other, PrivateKey) and self.raw_secret == other.raw_secret
 
     def hex(self) -> str:
         return self.raw_secret.hex()
@@ -176,9 +188,6 @@ class PrivateKey:
         delegation.signature = self.sign(
             sha256(delegation.delegation_token.encode()).digest()
         ).hex()
-
-    def __eq__(self, other):
-        return self.raw_secret == other.raw_secret
 
     def __repr__(self):
         pubkey = self.public_key.bech32()
