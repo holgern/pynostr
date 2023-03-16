@@ -51,8 +51,8 @@ if __name__ == "__main__":
                             relay_info["fees"]['admission'][0]['amount'] / 1000
                         )
     print(f"Found {len(paid_relays)} relays with fee!")
-    relay_manager = RelayManager(error_threshold=2, timeout=5)
-    relay_manager.add_relay_list(relay_list, close_on_eose=False, timeout=5)
+    relay_manager = RelayManager(error_threshold=2)
+    relay_manager.add_relay_list(relay_list, close_on_eose=True, timeout=5)
 
     events = EventMessageStore()
     events_by_relay = {}

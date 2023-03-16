@@ -153,9 +153,26 @@ class MessagePool:
 class EventMessageStore:
     eventMessages: Optional[List[EventMessage]] = None
 
-    def add_event(self, event):
+    def __post_init__(self):
         if self.eventMessages is None:
             self.eventMessages = []
+
+    def __len__(self):
+        return len(self.eventMessages)
+
+    def __getitem__(self, key):
+        return self.eventMessages[key]
+
+    def __setitem__(self, key, value):
+        self.eventMessages[key] = value
+
+    def __iter__(self):
+        return self.eventMessages.__iter__()
+
+    def __contains__(self, item):
+        return item in self.eventMessages
+
+    def add_event(self, event):
         if isinstance(event, list):
             self.eventMessages += event
         else:

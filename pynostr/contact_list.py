@@ -86,7 +86,10 @@ class ContactList(Event):
             sig=msg['sig'],
         )
         if cl.content is not None and bool(cl.content.strip()):
-            cl.relays = RelayList.from_dict(json.loads(cl.content))
+            try:
+                cl.relays = RelayList.from_dict(json.loads(cl.content))
+            except ValueError:
+                pass
         return cl
 
     def get_pub_key_list(self):

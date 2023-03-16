@@ -62,13 +62,12 @@ class Relay(BaseRelay):
                     ping_timeout=120,
                 )
             self.connected = True
-            # yield self.ws.write_message(self.request)
             # self.io_loop.call_later(1, self.send_message, self.request)
             while True:
                 if self.outgoing_messages.qsize() > 0:
                     message = self.outgoing_messages.get()
                     self.num_sent_events += 1
-                    yield self.ws.write_message(message)
+                    self.ws.write_message(message)
                 message = yield self.ws.read_message()
                 if message is None:
                     break
@@ -100,10 +99,11 @@ class Relay(BaseRelay):
 
         log.info(f"WebSocket connection to {self.url} closed")
 
+    @gen.coroutine
     def _eose_received(self):
         self.eose_counter += 1
         if self.close_on_eose and self.eose_counter >= self.eose_threshold:
-            self.close()
+            yield self.close()
 
     @gen.coroutine
     def on_error(self):

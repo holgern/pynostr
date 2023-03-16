@@ -33,7 +33,12 @@ class RelayList:
     def from_dict(cls, msg: dict) -> 'RelayList':
         rl = RelayList()
         for url in msg:
-            rl.append(url, RelayPolicy.from_dict(msg[url]))
+            if (
+                isinstance(msg[url], dict)
+                and "read" in msg[url]
+                and "write" in msg[url]
+            ):
+                rl.append(url, RelayPolicy.from_dict(msg[url]))
         return rl
 
     def to_dict(self) -> dict:
