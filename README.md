@@ -1,5 +1,24 @@
 # pynostr
 
+
+## Installation
+```bash
+pip install pynostr
+```
+with websocket-client support
+```bash
+pip install pynostr[websocket-client]
+```
+The necessary coincurve can be installed on android inside termux:
+```bash
+pkg update
+pkg install build-essential
+pkg install binutils
+pkg install python-cryptography
+pip install coincurve --no-binary all
+```
+
+
 | | |
 | --- | --- |
 | CI/CD | [![codecov](https://codecov.io/gh/holgern/pynostr/branch/main/graph/badge.svg?token=jIyk1cnhIx)](https://codecov.io/gh/holgern/pynostr) [![CircleCI](https://dl.circleci.com/status-badge/img/gh/holgern/pynostr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/holgern/pynostr/tree/main) |
@@ -68,24 +87,6 @@ This library works with python >= 3.7
 | relay_manager.close_connections() | - |
 | private_key.sign_event(event) | event.sign(private_key.hex()) |
 
-
-
-## Installation
-```bash
-pip install pynostr
-```
-with websocket-client support
-```bash
-pip install pynostr[websocket-client]
-```
-The necessary coincurve can be installed on android inside termux:
-```bash
-pkg update
-pkg install build-essential
-pkg install binutils
-pkg install python-cryptography
-pip install coincurve --no-binary all
-```
 
 ## Usage
 **Generate a key**
