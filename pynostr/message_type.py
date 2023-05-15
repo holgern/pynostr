@@ -3,6 +3,7 @@ class ClientMessageType:
     REQUEST = "REQ"
     CLOSE = "CLOSE"
     AUTH = "AUTH"
+    COUNT = "COUNT"
 
     @staticmethod
     def is_valid(type: str) -> bool:
@@ -11,6 +12,7 @@ class ClientMessageType:
             or type == ClientMessageType.REQ
             or type == ClientMessageType.CLOSE
             or type == ClientMessageType.AUTH
+            or type == ClientMessageType.COUNT
         ):
             return True
         return False
