@@ -163,6 +163,9 @@ class MessagePool:
             self.ok_notices.put(
                 OKMessage(message_json[1], message_json[2], message_json[3], url)
             )
+        elif message_type == RelayMessageType.COUNT:
+            print(f"message json: {message_json}")
+            self.count.put(CountMessage(subscription_id=message_json[1], count=message_json[2]))
 
     def __repr__(self):
         return (

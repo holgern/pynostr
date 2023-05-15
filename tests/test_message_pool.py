@@ -1,10 +1,10 @@
 import json
 import unittest
 import uuid
-
-from pynostr.event import Event
+import time
+from pynostr.event import Event, EventKind
 from pynostr.message_pool import MessagePool
-
+from pynostr.filters import FiltersList, Filters
 
 class TestMessagePool(unittest.TestCase):
     def test_empty_pool(self):
@@ -61,10 +61,14 @@ class TestMessagePool(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].url, url)
 
-    # TODO Test 
     def test_count(self):
-        # mp = MessagePool()
-        # e = Event()
-        # url = "ws://relay"
-        #mp.add_message(json.dumps(["COUNT", sub_id, e.to_dict()]), url)
-        pass
+        mp = MessagePool()
+        filters = FiltersList([Filters(kinds=[EventKind.TEXT_NOTE], until=time.time_ns())]).to_json_array()
+        url = "ws://relay"
+
+        sub_id = uuid.uuid1().hex
+        mp.add_message(json.dumps(["COUNT", sub_id, filters]), url)
+        self.assertEqual(mp.has_counts(), 1)
+        results = mp.get_all()["count"]
+        self.assertEqual(results[0].subscription_id, sub_id)
+        self.assertEqual(len(results), 1)
