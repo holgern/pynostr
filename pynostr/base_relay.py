@@ -107,7 +107,7 @@ class BaseRelay:
             self.publish(self.subscriptions[id].to_message())
             self.eose_threshold += 1
 
-    def add_nip45_count(self, subscription_id: str) -> int:
+    def add_nip45_count(self, subscription_id: str):
         """
             Get event/filter count for subscription
 
