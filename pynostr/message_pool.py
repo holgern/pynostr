@@ -52,6 +52,7 @@ class EndOfStoredEventsMessage:
 class CountMessage:
     subscription_id: str
     count: int
+    url: str
 
     def __repr__(self):
         return f'{self.subscription_id}-COUNT-{self.count}'
@@ -164,8 +165,8 @@ class MessagePool:
                 OKMessage(message_json[1], message_json[2], message_json[3], url)
             )
         elif message_type == RelayMessageType.COUNT:
-            print(f"message json: {message_json}")
-            self.count.put(CountMessage(subscription_id=message_json[1], count=message_json[2]))
+            count = message_json[2].get("count", -1) # TODO make -1 an error constant
+            self.count.put(CountMessage(subscription_id=message_json[1], count=count, url=url))
 
     def __repr__(self):
         return (
