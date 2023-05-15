@@ -60,3 +60,11 @@ class TestMessagePool(unittest.TestCase):
         results = mp.get_all_events()
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].url, url)
+
+    # TODO Test 
+    def test_count(self):
+        # mp = MessagePool()
+        # e = Event()
+        # url = "ws://relay"
+        #mp.add_message(json.dumps(["COUNT", sub_id, e.to_dict()]), url)
+        pass

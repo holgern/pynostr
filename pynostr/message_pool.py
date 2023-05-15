@@ -47,6 +47,14 @@ class EndOfStoredEventsMessage:
 
     def __repr__(self):
         return f'EOSE({self.url})'
+    
+@dataclass
+class CountMessage:
+    subscription_id: str
+    count: int
+
+    def __repr__(self):
+        return f'{self.subscription_id}-COUNT-{self.count}'
 
 
 class MessagePool:
@@ -56,6 +64,7 @@ class MessagePool:
         self.notices: Queue[NoticeMessage] = Queue()
         self.eose_notices: Queue[EndOfStoredEventsMessage] = Queue()
         self.ok_notices: Queue[OKMessage] = Queue()
+        self.count: Queue[CountMessage] = Queue()
         self._unique_objects: set = set()
         self.lock: Lock = Lock()
 
@@ -85,13 +94,20 @@ class MessagePool:
         while self.has_ok_notices():
             ok.append(self.get_ok_notice())
         return ok
+    
+    def get_all_count(self):
+        count = []
+        while self.has_counts():
+            count.append(self.get_count())
+        return count
 
     def get_all(self):
-        results = {"events": [], "notices": [], "eose": [], "ok": []}
+        results = {"events": [], "notices": [], "eose": [], "ok": [], "count": []}
         results["events"] = self.get_all_events()
         results["notices"] = self.get_all_notices()
         results["eose"] = self.get_all_eose()
         results["ok"] = self.get_all_ok()
+        results["count"] = self.get_all_count()
         return results
 
     def get_event(self):
@@ -105,6 +121,9 @@ class MessagePool:
 
     def get_ok_notice(self):
         return self.ok_notices.get()
+    
+    def get_count(self):
+        return self.count.get()
 
     def has_events(self):
         return self.events.qsize() > 0
@@ -117,6 +136,9 @@ class MessagePool:
 
     def has_ok_notices(self):
         return self.ok_notices.qsize() > 0
+    
+    def has_counts(self):
+        return self.count.qsize() > 0
 
     def _process_message(self, message: str, url: str):
         message_json = json.loads(message)

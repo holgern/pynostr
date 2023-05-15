@@ -22,7 +22,7 @@ class Subscription:
         message.extend(self.filtersList.to_json_array())
         return json.dumps(message)
 
-    def to_nip45_count_message(self) -> int:
+    def to_nip45_count_message(self) -> str:
         """
             NIP-45: https://github.com/nostr-protocol/nips/blob/master/45.md
 

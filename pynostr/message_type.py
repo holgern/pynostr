@@ -24,6 +24,7 @@ class RelayMessageType:
     AUTH = "AUTH"
     END_OF_STORED_EVENTS = "EOSE"
     OK = "OK"
+    COUNT = "COUNT"
 
     @staticmethod
     def is_valid(type: str) -> bool:
@@ -33,6 +34,7 @@ class RelayMessageType:
             or type == RelayMessageType.AUTH
             or type == RelayMessageType.END_OF_STORED_EVENTS
             or type == RelayMessageType.OK
+            or type == RelayMessageType.COUNT
         ):
             return True
         return False
