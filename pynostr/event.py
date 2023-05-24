@@ -20,6 +20,7 @@ class EventKind(IntEnum):
     CONTACTS = 3
     ENCRYPTED_DIRECT_MESSAGE = 4
     DELETE = 5
+    REPOSTS = 6
     REACTION = 7
     BADGE_AWARD = 8
     CHANNEL_CREATE = 40
