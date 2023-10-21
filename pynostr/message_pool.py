@@ -12,7 +12,7 @@ from .message_type import RelayMessageType
 
 @dataclass
 class EventMessage:
-    event: str
+    event: Event
     subscription_id: str
     url: str
 
