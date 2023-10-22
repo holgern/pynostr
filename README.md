@@ -229,6 +229,25 @@ dm_event = dm.to_event()
 dm_event.sign(private_key.hex())
 ```
 
+**Decrypt a DM**
+Note: This code assumes you first subscribed to relays and filtered for events of kind 4 where the author is your pubkey.
+```python
+from pynostr.encrypted_dm import EncryptedDirectMessage
+from pynostr.key import PrivateKey
+private_key = PrivateKey(unhexlify("your_hex_sec_key))
+public_key = private_key.public_key.hex()
+
+encrypted_message = event.content
+ref_id = event.id
+dm = EncryptedDirectMessage(reference_event_id=ref_id)
+dm.decrypt(
+  private_key.hex(),
+  encrypted_message,
+  public_key.hex() or event.pubkey
+)
+print(dm.cleartext_content)
+```
+
 **NIP-26 delegation**
 ```python
 from pynostr.delegation import Delegation
