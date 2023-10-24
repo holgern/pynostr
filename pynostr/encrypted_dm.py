@@ -18,6 +18,7 @@ class EncryptedDirectMessage:
     cleartext_content: Optional[str] = None
     encrypted_message: Optional[str] = None
     reference_event_id: Optional[str] = None
+    event: Optional[Event] = None
 
     @classmethod
     def from_event(cls, event: Event) -> 'EncryptedDirectMessage':
@@ -77,7 +78,7 @@ class EncryptedDirectMessage:
         if encrypted_message is not None:
             self.encrypted_message = encrypted_message
         if public_key_hex is None:
-            public_key_hex = self.recipient_pubkey
+            public_key_hex = self.pubkey
         if public_key_hex is None:
             raise Exception("public_key must not be None")
         if self.encrypted_message is None:
