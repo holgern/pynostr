@@ -287,7 +287,9 @@ enc_dm = EncryptedDirectMessage(
     sender_pk,
     encrypted_message=encrypted_msg_from_sender_to_receiver,
 )
-print(dm.cleartext_content)
+enc_dm.decrypt(receiver_sk.hex())
+message = enc_dm.cleartext_content
+print(message)
 ```
 
 **NIP-26 delegation**
