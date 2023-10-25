@@ -78,7 +78,7 @@ class EncryptedDirectMessage:
         if encrypted_message is not None:
             self.encrypted_message = encrypted_message
         if public_key_hex is None:
-            public_key_hex = self.pubkey
+            public_key_hex = self.recipient_pubkey
         if public_key_hex is None:
             raise Exception("public_key must not be None")
         if self.encrypted_message is None:
