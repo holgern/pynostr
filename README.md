@@ -229,24 +229,12 @@ dm_event = dm.to_event()
 dm_event.sign(private_key.hex())
 ```
 
-**Decrypting DMs**
-Note: This code assumes you first subscribed to relays and filtered for events of kind 4 that pertain to your pubkey.
+**Decrypt DMs**
+Note: This code assumes you first subscribed to relays and filtered for events of kind 4 where the author is your pubkey.
 ```python
 # Initial DM
 from pynostr.encrypted_dm import EncryptedDirectMessage
 from pynostr.key import PrivateKey
-<<<<<<< Updated upstream
-private_key = PrivateKey(unhexlify("your_hex_sec_key))
-public_key = private_key.public_key.hex()
-
-encrypted_message = event.content
-ref_id = event.id
-dm = EncryptedDirectMessage(reference_event_id=ref_id)
-dm.decrypt(
-  private_key.hex(),
-  encrypted_message,
-  public_key.hex() or event.pubkey
-=======
 dm_event0 = {
     "id": "abc123...",
     "pubkey": "xyz123...",
@@ -298,39 +286,8 @@ enc_dm = EncryptedDirectMessage(
     receiver_pk.hex(),
     sender_pk,
     encrypted_message=encrypted_msg_from_sender_to_receiver,
->>>>>>> Stashed changes
 )
-enc_dm.decrypt(receiver_sk.hex())
-message = enc_dm.cleartext_content
-print(message)
-
-dm_event1 = {
-    "id": "123abc...",
-    "pubkey": "ijk098...",
-    "created_at": 0000000000,
-    "kind": 4,
-    "tags": [
-        [
-            "p",
-            "xyz123..."
-        ]
-    ],
-    "content": "encoded_content?iv=encoded_iv",
-    "sig": "abcdef123456..."
-}
-
-receiver_sk = PrivateKey("sk_hex")
-receiver_pk = receiver_sk.public_key or dm_event1["tags"][0][1]
-sender_pk = dm_event1['pubkey']
-encrypted_msg_from_sender_to_receiver = dm_event1['content']
-enc_dm = EncryptedDirectMessage(
-    receiver_pk.hex(),
-    sender_pk,
-    encrypted_message=MSG_FROM_ABBOT_TO_BRYAN,
-)
-enc_dm.decrypt(receiver_sk.hex())
-message = enc_dm.cleartext_content
-print(message)
+print(dm.cleartext_content)
 ```
 
 **NIP-26 delegation**
