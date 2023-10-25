@@ -18,6 +18,7 @@ class EncryptedDirectMessage:
     cleartext_content: Optional[str] = None
     encrypted_message: Optional[str] = None
     reference_event_id: Optional[str] = None
+    event: Optional[Event] = None
 
     @classmethod
     def from_event(cls, event: Event) -> 'EncryptedDirectMessage':
