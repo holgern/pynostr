@@ -88,12 +88,13 @@ if __name__ == "__main__":
     newest_metadata = relay_list2[-1][1]["metadata"]
     table = Table("key", "value")
     for key, value in newest_metadata.metadata_to_dict().items():
-        table.add_row(key, value)
+        table.add_row(str(key), str(value))  # Convert key and value to string
     console.print(table)
 
     if len(newest_metadata.identities) > 0:
         table = Table("claim_type", "identity", "proof")
         for identity in newest_metadata.identities:
-            table.add_row(identity.claim_type, identity.identity, identity.proof)
+            table.add_row(str(identity.claim_type), str(identity.identity), str(identity.proof))  # Convert all to string
 
         console.print(table)
+
