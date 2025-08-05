@@ -107,6 +107,21 @@ class BaseRelay:
             self.publish(self.subscriptions[id].to_message())
             self.eose_threshold += 1
 
+    def add_nip45_count(self, subscription_id: str):
+        """
+            Get event/filter count for subscription
+
+            https://github.com/nostr-protocol/nips/blob/master/45.md
+        """
+        with self.lock:
+            # Get subscription
+            subscription = self.subscriptions.get(subscription_id, None)
+            if not subscription:
+                # TODO Determine whether or not to raise error or pass falsey value back to caller
+                raise ValueError(f"Subscription ID: {subscription_id} does not exist.")
+            # TODO Determine how to handle this
+            self.publish(subscription.to_nip45_count_message())
+
     def close_subscription(self, id: str) -> None:
         with self.lock:
             self.subscriptions.pop(id, None)
@@ -137,7 +152,12 @@ class BaseRelay:
             elif message_type == RelayMessageType.OK:
                 self.message_pool.add_message(message, self.url)
             elif message_type == RelayMessageType.AUTH:
+                # TODO Follow this workflow to see if this is fully implemented
                 print(message)
+            elif message == RelayMessageType.COUNT:
+                # TODO Handling COUNT similar to others for now. 
+                # It might be exploring more as a one-off type of request, however.
+                self.message_pool.add_message(message, self.url)
 
     def publish(self, message: str):
         self.outgoing_messages.put(message)

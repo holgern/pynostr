@@ -23,3 +23,5 @@ class TestBaseRelay(unittest.TestCase):
 
         got = RelayPolicy.from_dict(policy.to_dict())
         self.assertEqual(got, policy)
+    
+    # TODO Thing of extended COUNT verb test case

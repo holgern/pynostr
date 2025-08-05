@@ -3,6 +3,7 @@ class ClientMessageType:
     REQUEST = "REQ"
     CLOSE = "CLOSE"
     AUTH = "AUTH"
+    COUNT = "COUNT"
 
     @staticmethod
     def is_valid(type: str) -> bool:
@@ -11,6 +12,7 @@ class ClientMessageType:
             or type == ClientMessageType.REQ
             or type == ClientMessageType.CLOSE
             or type == ClientMessageType.AUTH
+            or type == ClientMessageType.COUNT
         ):
             return True
         return False
@@ -22,6 +24,7 @@ class RelayMessageType:
     AUTH = "AUTH"
     END_OF_STORED_EVENTS = "EOSE"
     OK = "OK"
+    COUNT = "COUNT"
 
     @staticmethod
     def is_valid(type: str) -> bool:
@@ -31,6 +34,7 @@ class RelayMessageType:
             or type == RelayMessageType.AUTH
             or type == RelayMessageType.END_OF_STORED_EVENTS
             or type == RelayMessageType.OK
+            or type == RelayMessageType.COUNT
         ):
             return True
         return False
