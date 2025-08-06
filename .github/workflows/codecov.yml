@@ -10,15 +10,14 @@ jobs:
     - uses: actions/checkout@master
     - name: Setup Python
       uses: actions/setup-python@master
-      with:
-        python-version: 3.9
     - name: 'generate report'
       run: |
         pip install coverage coincurve tlv8 cryptography click
         pip install -e .
         coverage run -m unittest
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v5
       with:
         flags: unittests
         fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}

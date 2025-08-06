@@ -1,0 +1,27 @@
+
+target-version = "py39"
+fix = true
+
+[lint]
+extend-select = [
+    "B",
+    "C90",
+    "E501",  # line too long (default 88)
+    "I",  # isort
+    "UP",  # pyupgrade
+]
+exclude = ["dev/*", "examples/*"]
+
+[format]
+
+exclude = ["dev/*", "examples/*"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401", "I001"]  # ignore unused and unsorted imports in __init__.py
+"__manifest__.py" = ["B018"]  # useless expression
+
+[lint.isort]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[lint.mccabe]
+max-complexity = 16
