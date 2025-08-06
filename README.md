@@ -1,15 +1,19 @@
 # pynostr
 
-
 ## Installation
+
 ```bash
 pip install pynostr
 ```
+
 with websocket-client support
+
 ```bash
 pip install pynostr[websocket-client]
 ```
+
 The necessary coincurve can be installed on android inside termux:
+
 ```bash
 pkg update
 pkg install build-essential
@@ -18,13 +22,12 @@ pkg install python-cryptography
 pip install coincurve --no-binary all
 ```
 
-
-| | |
-| --- | --- |
-| CI/CD | [![codecov](https://codecov.io/gh/holgern/pynostr/branch/main/graph/badge.svg?token=jIyk1cnhIx)](https://codecov.io/gh/holgern/pynostr) [![CircleCI](https://dl.circleci.com/status-badge/img/gh/holgern/pynostr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/holgern/pynostr/tree/main) |
+|         |                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI/CD   | [![codecov](https://codecov.io/gh/holgern/pynostr/branch/main/graph/badge.svg?token=jIyk1cnhIx)](https://codecov.io/gh/holgern/pynostr) [![CircleCI](https://dl.circleci.com/status-badge/img/gh/holgern/pynostr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/holgern/pynostr/tree/main)                                                                                                                                   |
 | Package | [![PyPI - Version](https://img.shields.io/pypi/v/pynostr.svg?logo=pypi&label=PyPI&logoColor=gold)](https://pypi.org/project/pynostr/) [![PyPI - Downloads](https://img.shields.io/pypi/dm/pynostr.svg?color=blue&label=Downloads&logo=pypi&logoColor=gold)](https://pypi.org/project/pynostr/) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pynostr.svg?logo=python&label=Python&logoColor=gold)](https://pypi.org/project/pynostr/) |
 
------
+---
 
 Python library for for [Nostr](https://github.com/nostr-protocol/nostr).
 
@@ -73,23 +76,24 @@ This library works with python >= 3.7
 
 ## Differences from python-nostr
 
-* tornado websockets
-* coincurve secp256k1 implementation
-* no proxies
-* no ssl_options
-* relay can be used to open a connection to a relay
+- tornado websockets
+- coincurve secp256k1 implementation
+- no proxies
+- no ssl_options
+- relay can be used to open a connection to a relay
 
-| python-nostr | pynostr |
-| --- | --- |
-| Filter | Filters |
-| Filters | FiltersList |
-| relay_manager.open_connections | relay_manager.run_sync() |
-| relay_manager.close_connections() | - |
-| private_key.sign_event(event) | event.sign(private_key.hex()) |
-
+| python-nostr                      | pynostr                       |
+| --------------------------------- | ----------------------------- |
+| Filter                            | Filters                       |
+| Filters                           | FiltersList                   |
+| relay_manager.open_connections    | relay_manager.run_sync()      |
+| relay_manager.close_connections() | -                             |
+| private_key.sign_event(event)     | event.sign(private_key.hex()) |
 
 ## Usage
+
 **Generate a key**
+
 ```python
 from pynostr.key import PrivateKey
 
@@ -100,6 +104,7 @@ print(f"Public key: {public_key.bech32()}")
 ```
 
 **Connect to relays**
+
 ```python
 from pynostr.relay_manager import RelayManager
 from pynostr.filters import FiltersList, Filters
@@ -124,6 +129,7 @@ relay_manager.close_all_relay_connections()
 ```
 
 **Connect to single relay**
+
 ```python
 from pynostr.relay import Relay
 from pynostr.filters import FiltersList, Filters
@@ -164,8 +170,8 @@ while message_pool.has_events():
     print(event_msg.event.content)
 ```
 
-
 **Publish to relays**
+
 ```python
 import json
 import ssl
@@ -202,6 +208,7 @@ while relay_manager.message_pool.has_events():
 ```
 
 **Reply to a note**
+
 ```python
 from pynostr.event import Event
 reply = Event(
@@ -215,6 +222,7 @@ reply.sign(private_key.hex())
 ```
 
 **Send a DM**
+
 ```python
 from pynostr.encrypted_dm import EncryptedDirectMessage
 from pynostr.key import PrivateKey
@@ -231,6 +239,7 @@ dm_event.sign(private_key.hex())
 
 **Decrypt DMs**
 Note: This code assumes you first subscribed to relays and filtered for events of kind 4 where the author is your pubkey.
+
 ```python
 # Initial DM
 from pynostr.encrypted_dm import EncryptedDirectMessage
@@ -293,6 +302,7 @@ print(message)
 ```
 
 **NIP-26 delegation**
+
 ```python
 from pynostr.delegation import Delegation
 from pynostr.event import EventKind, Event
@@ -322,7 +332,9 @@ event.sign(self.delegatee_pk.hex())
 
 # ...normal broadcast steps...
 ```
+
 **NIP-13: Proof of Work**
+
 ```python
 from pynostr.event import Event
 from pynostr.pow import PowEvent
@@ -337,29 +349,35 @@ assert pe.check_difficulty(e)
 ### Set up the test environment
 
 Install the test-runner dependencies:
+
 ```
 pip3 install -r test-requirements.txt
 ```
 
 Then make the `pynostr` python module visible/importable to the tests by installing the local dev dir as an editable module:
+
 ```
 # from the repo root
 pip3 install -e .
 ```
 
 ### Running the test suite
+
 Run the whole test suite:
+
 ```
 # from the repo root
 pytest
 ```
 
 Run a specific test file:
+
 ```
 pytest test/test_this_file.py
 ```
 
 Run a specific test:
+
 ```
 pytest test/test_this_file.py::test_this_specific_test
 ```
@@ -387,6 +405,7 @@ $ pip install pre-commit
 ```
 
 ### Using homebrew:
+
 ```
 $ brew install pre-commit
 ```
@@ -403,12 +422,14 @@ $ pre-commit install
 ```
 
 ### Run against all the files
+
 ```
 pre-commit run --all-files
 pre-commit run --show-diff-on-failure --color=always --all-files
 ```
 
 ### Update package rev in pre-commit yaml
+
 ```bash
 pre-commit autoupdate
 pre-commit run --show-diff-on-failure --color=always --all-files

@@ -16,12 +16,14 @@ class Relay(BaseRelay):
         url: str,
         message_pool: MessagePool,
         io_loop: IOLoop,
-        policy: RelayPolicy = RelayPolicy(),
+        policy: RelayPolicy | None = None,
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
         message_callback_url=False,
     ) -> None:
+        if policy is None:
+            policy = RelayPolicy()
         super().__init__(
             url,
             policy,

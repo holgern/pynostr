@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from .event import Event
 from .key import PrivateKey
 
-BECH32_CHARS = '023456789acdefghjklmnpqrstuvwxyz'
+BECH32_CHARS = "023456789acdefghjklmnpqrstuvwxyz"
 
 
 def zero_bits(b: int) -> int:

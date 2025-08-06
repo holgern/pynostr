@@ -91,7 +91,7 @@ def main(verbose: int = 3):
     verbosity = ["critical", "error", "warn", "info", "debug"][int(min(verbose, 4))]
     log.setLevel(getattr(logging, verbosity.upper()))
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     ch = logging.StreamHandler()
     ch.setLevel(getattr(logging, verbosity.upper()))

@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from .delegation import Delegation
 from .utils import bech32_decode, bech32_encode
 
-HAS_ECDH = hasattr(lib, 'secp256k1_ecdh')
+HAS_ECDH = hasattr(lib, "secp256k1_ecdh")
 
 
 class PublicKey:
@@ -47,7 +47,7 @@ class PublicKey:
         return pk.verify(sig, message)
 
     @classmethod
-    def from_hex(cls, hex: str) -> 'PublicKey':
+    def from_hex(cls, hex: str) -> "PublicKey":
         return cls(bytes.fromhex(hex))
 
     @classmethod
@@ -57,7 +57,7 @@ class PublicKey:
 
     def __repr__(self):
         pubkey = self.bech32()
-        return f'PublicKey({pubkey[:10]}...{pubkey[-10:]})'
+        return f"PublicKey({pubkey[:10]}...{pubkey[-10:]})"
 
     def __eq__(self, other):
         return isinstance(other, PublicKey) and self.raw_bytes == other.raw_bytes
@@ -129,13 +129,13 @@ class PrivateKey:
         if not HAS_ECDH:
             raise Exception("secp256k1_ecdh not enabled")
         sk = secp256k1.PrivateKey(self.raw_secret)
-        result = ffi.new('char [32]')
+        result = ffi.new("char [32]")
         pk = secp256k1.PublicKey(bytes.fromhex("02" + public_key_hex))
         res = lib.secp256k1_ecdh(
             sk.context.ctx, result, pk.public_key, self.raw_secret, copy_x, ffi.NULL
         )
         if not res:
-            raise Exception(f'invalid scalar ({res})')
+            raise Exception(f"invalid scalar ({res})")
 
         return bytes(ffi.buffer(result, 32))
 
@@ -163,7 +163,7 @@ class PrivateKey:
         return f"{ret_part1}?iv={ret_part2}"
 
     def decrypt_message(self, encoded_message: str, public_key_hex: str) -> str:
-        encoded_data = encoded_message.split('?iv=')
+        encoded_data = encoded_message.split("?iv=")
         encoded_content, encoded_iv = encoded_data[0], encoded_data[1]
 
         iv = base64.b64decode(encoded_iv)
@@ -180,7 +180,7 @@ class PrivateKey:
 
         return unpadded_data.decode()
 
-    def sign(self, message: bytes, aux_randomness: bytes = b'') -> str:
+    def sign(self, message: bytes, aux_randomness: bytes = b"") -> str:
         sk = secp256k1.PrivateKey(self.raw_secret)
         return sk.sign_schnorr(message, aux_randomness)
 
@@ -191,7 +191,7 @@ class PrivateKey:
 
     def __repr__(self):
         pubkey = self.public_key.bech32()
-        return f'PrivateKey({pubkey[:10]}...{pubkey[-10:]})'
+        return f"PrivateKey({pubkey[:10]}...{pubkey[-10:]})"
 
     def __str__(self):
         """Return private key in hex form

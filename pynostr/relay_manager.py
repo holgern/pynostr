@@ -38,14 +38,15 @@ class RelayManager:
     def add_relay(
         self,
         url: str,
-        policy: RelayPolicy = RelayPolicy(),
+        policy: RelayPolicy | None = None,
         timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
         message_callback_url=False,
         get_metadata=False,
     ):
-
+        if policy is None:
+            policy = RelayPolicy()
         relay = Relay(
             url,
             self.message_pool,
@@ -95,7 +96,7 @@ class RelayManager:
     def remove_closed_relays(self):
         for url, connected in self.connection_statuses.items():
             if not connected:
-                log.info(f'{url} is not connected... removing relay.')
+                log.info(f"{url} is not connected... removing relay.")
                 self.remove_relay(url=url)
 
     def add_subscription_on_relay(self, url: str, id: str, filters: FiltersList):

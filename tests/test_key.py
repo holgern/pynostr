@@ -133,9 +133,9 @@ class TestPrivateKey(unittest.TestCase):
         )
         self.assertEqual(
             shared_secret1.hex(),
-            '646570d4716e0c7e4106788f113a410d5b647225dca3b47ef98bedb64c8044e1',
+            "646570d4716e0c7e4106788f113a410d5b647225dca3b47ef98bedb64c8044e1",
         )
         self.assertEqual(
             shared_secret2.hex(),
-            '646570d4716e0c7e4106788f113a410d5b647225dca3b47ef98bedb64c8044e1',
+            "646570d4716e0c7e4106788f113a410d5b647225dca3b47ef98bedb64c8044e1",
         )

@@ -21,7 +21,7 @@ class EncryptedDirectMessage:
     event: Optional[Event] = None
 
     @classmethod
-    def from_event(cls, event: Event) -> 'EncryptedDirectMessage':
+    def from_event(cls, event: Event) -> "EncryptedDirectMessage":
         if event.kind != EventKind.ENCRYPTED_DIRECT_MESSAGE:
             return None
         dm = EncryptedDirectMessage(encrypted_message=event.content)
@@ -30,7 +30,7 @@ class EncryptedDirectMessage:
         return dm
 
     @classmethod
-    def from_npub(cls, npub: str) -> 'EncryptedDirectMessage':
+    def from_npub(cls, npub: str) -> "EncryptedDirectMessage":
         dm = EncryptedDirectMessage()
         dm.pubkey = PublicKey.from_npub(npub).hex()
         return dm

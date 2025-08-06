@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import time
 from threading import Thread
 from typing import Union
@@ -14,10 +15,12 @@ class WebSocketRelay(BaseRelay):
         self,
         url: str,
         message_pool: MessagePool,
-        policy: RelayPolicy = RelayPolicy(),
+        policy: RelayPolicy | None = None,
         ssl_options: dict = None,
         proxy_config: Union[None, RelayProxyConnectionConfig] = None,
     ) -> None:
+        if policy is None:
+            policy = RelayPolicy()
         super().__init__(url, policy, message_pool)
         self.ssl_options = ssl_options
         self.proxy_config = proxy_config

@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import unittest
 
 from pynostr.event import Event
@@ -24,7 +25,7 @@ class TestPrivateKey(unittest.TestCase):
             relay_manager.publish_event(event)
 
         # Attempt to relay with a nonsense signature
-        event.sig = (b'\00' * 64).hex()
+        event.sig = (b"\00" * 64).hex()
         with self.assertRaisesRegex(RelayException, "failed to verify"):
             relay_manager.publish_event(event)
 
@@ -37,17 +38,17 @@ class TestPrivateKey(unittest.TestCase):
         all relays so that subscriptions can vary."""
         # initiate relay manager with two relays
         relay_manager = RelayManager(error_threshold=1)
-        relay_manager.add_relay(url='ws://fake-relay1')
-        relay_manager.add_relay(url='ws://fake-relay2')
+        relay_manager.add_relay(url="ws://fake-relay1")
+        relay_manager.add_relay(url="ws://fake-relay2")
 
         # make test subscription and add to one relay
-        test_subscription = Subscription('test', FiltersList())
-        relay_manager.relays['ws://fake-relay1'].subscriptions.update(
+        test_subscription = Subscription("test", FiltersList())
+        relay_manager.relays["ws://fake-relay1"].subscriptions.update(
             {test_subscription.id: test_subscription}
         )
         # make sure test subscription isn't in second relay subscriptions
         self.assertTrue(
             test_subscription.id
-            not in relay_manager.relays['ws://fake-relay2'].subscriptions.keys()
+            not in relay_manager.relays["ws://fake-relay2"].subscriptions.keys()
         )
         relay_manager.close_all_relay_connections()

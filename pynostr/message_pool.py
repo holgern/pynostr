@@ -1,10 +1,11 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import datetime
 import json
 from dataclasses import dataclass
 from queue import Queue
 from threading import Lock
-from typing import List, Optional
+from typing import Optional
 
 from .event import Event
 from .message_type import RelayMessageType
@@ -17,7 +18,7 @@ class EventMessage:
     url: str
 
     def __repr__(self):
-        return f'EventMessage({self.url}: kind {str(self.event.kind)})'
+        return f"EventMessage({self.url}: kind {str(self.event.kind)})"
 
 
 @dataclass
@@ -26,7 +27,7 @@ class NoticeMessage:
     url: str
 
     def __repr__(self):
-        return f'Notice({self.url}: {self.content})'
+        return f"Notice({self.url}: {self.content})"
 
 
 @dataclass
@@ -37,7 +38,7 @@ class OKMessage:
     url: str
 
     def __repr__(self):
-        return f'OK({self.url}: {self.event_id} {self.ok} {self.message})'
+        return f"OK({self.url}: {self.event_id} {self.ok} {self.message})"
 
 
 @dataclass
@@ -46,8 +47,9 @@ class EndOfStoredEventsMessage:
     url: str
 
     def __repr__(self):
-        return f'EOSE({self.url})'
-    
+        return f"EOSE({self.url})"
+
+
 @dataclass
 class CountMessage:
     subscription_id: str
@@ -55,7 +57,7 @@ class CountMessage:
     url: str
 
     def __repr__(self):
-        return f'{self.subscription_id}-COUNT-{self.count}'
+        return f"{self.subscription_id}-COUNT-{self.count}"
 
 
 class MessagePool:
@@ -95,7 +97,7 @@ class MessagePool:
         while self.has_ok_notices():
             ok.append(self.get_ok_notice())
         return ok
-    
+
     def get_all_count(self):
         count = []
         while self.has_counts():
@@ -122,7 +124,7 @@ class MessagePool:
 
     def get_ok_notice(self):
         return self.ok_notices.get()
-    
+
     def get_count(self):
         return self.count.get()
 
@@ -137,7 +139,7 @@ class MessagePool:
 
     def has_ok_notices(self):
         return self.ok_notices.qsize() > 0
-    
+
     def has_counts(self):
         return self.count.qsize() > 0
 
@@ -152,7 +154,7 @@ class MessagePool:
                 if self.first_response_only:
                     object_id = event.id
                 else:
-                    object_id = f'{event.id}:{url}'
+                    object_id = f"{event.id}:{url}"
                 if object_id not in self._unique_objects:
                     self.events.put(EventMessage(event, subscription_id, url))
                     self._unique_objects.add(event.id)
@@ -165,19 +167,21 @@ class MessagePool:
                 OKMessage(message_json[1], message_json[2], message_json[3], url)
             )
         elif message_type == RelayMessageType.COUNT:
-            count = message_json[2].get("count", -1) # TODO make -1 an error constant
-            self.count.put(CountMessage(subscription_id=message_json[1], count=count, url=url))
+            count = message_json[2].get("count", -1)  # TODO make -1 an error constant
+            self.count.put(
+                CountMessage(subscription_id=message_json[1], count=count, url=url)
+            )
 
     def __repr__(self):
         return (
-            f'Pool(events({self.events.qsize()}) notices({self.notices.qsize()}) '
-            f'eose({self.eose_notices.qsize()}) ok({self.ok_notices.qsize()}))'
+            f"Pool(events({self.events.qsize()}) notices({self.notices.qsize()}) "
+            f"eose({self.eose_notices.qsize()}) ok({self.ok_notices.qsize()}))"
         )
 
 
 @dataclass
 class EventMessageStore:
-    eventMessages: Optional[List[EventMessage]] = None
+    eventMessages: Optional[list[EventMessage]] = None
 
     def __post_init__(self):
         if self.eventMessages is None:
@@ -240,5 +244,5 @@ class EventMessageStore:
 
     def __repr__(self):
         if not self.eventMessages:
-            return 'EventMessageStore()'
-        return f'EventMessageStore({len(self.eventMessages)} events)'
+            return "EventMessageStore()"
+        return f"EventMessageStore({len(self.eventMessages)} events)"

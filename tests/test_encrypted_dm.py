@@ -26,7 +26,7 @@ class TestEncryptedDirectMessage(unittest.TestCase):
             recipient_pubkey=self.recipient_pubkey,
             cleartext_content="Secret message!",
         )
-        self.assertIn(['p', self.recipient_pubkey], dm.to_event().tags)
+        self.assertIn(["p", self.recipient_pubkey], dm.to_event().tags)
 
     def test_event_e_tag(self):
         """May generate event 'e' tag."""
@@ -37,8 +37,8 @@ class TestEncryptedDirectMessage(unittest.TestCase):
             recipient_pubkey=self.recipient_pubkey,
             cleartext_content="Secret message!",
         )
-        self.assertIn(['p', self.recipient_pubkey], dm.to_event().tags)
-        self.assertIn(['e', "ref_event_id"], dm.to_event().tags)
+        self.assertIn(["p", self.recipient_pubkey], dm.to_event().tags)
+        self.assertIn(["e", "ref_event_id"], dm.to_event().tags)
 
     def test_NIP_validation(self):
         dm = EncryptedDirectMessage()

@@ -3,7 +3,6 @@ import logging
 from dataclasses import dataclass
 from queue import Queue
 from threading import Lock
-from typing import Dict
 
 from .event import Event
 from .filters import FiltersList
@@ -27,10 +26,10 @@ class RelayPolicy:
     should_write: bool = True
 
     @classmethod
-    def from_dict(cls, msg: dict) -> 'RelayPolicy':
+    def from_dict(cls, msg: dict) -> "RelayPolicy":
         return RelayPolicy(should_read=msg["read"], should_write=msg["write"])
 
-    def to_dict(self) -> Dict[str, bool]:
+    def to_dict(self) -> dict[str, bool]:
         return {"read": self.should_read, "write": self.should_write}
 
     def __str__(self):
@@ -49,7 +48,7 @@ class BaseRelay:
         self,
         url: str,
         policy: RelayPolicy,
-        message_pool: MessagePool = MessagePool(),
+        message_pool: MessagePool | None = None,
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
@@ -74,6 +73,8 @@ class BaseRelay:
         self.message_callback = message_callback
         self.message_callback_url = message_callback_url
         self.outgoing_messages = Queue()
+        if self.message_pool is None:
+            self.message_pool = MessagePool()
 
     def __repr__(self):
         return json.dumps(self.to_dict(), indent=2)
@@ -109,15 +110,16 @@ class BaseRelay:
 
     def add_nip45_count(self, subscription_id: str):
         """
-            Get event/filter count for subscription
+        Get event/filter count for subscription
 
-            https://github.com/nostr-protocol/nips/blob/master/45.md
+        https://github.com/nostr-protocol/nips/blob/master/45.md
         """
         with self.lock:
             # Get subscription
             subscription = self.subscriptions.get(subscription_id, None)
             if not subscription:
-                # TODO Determine whether or not to raise error or pass falsey value back to caller
+                # TODO Determine whether or not to raise error or pass 
+                # falsey value back to caller
                 raise ValueError(f"Subscription ID: {subscription_id} does not exist.")
             # TODO Determine how to handle this
             self.publish(subscription.to_nip45_count_message())
@@ -155,7 +157,7 @@ class BaseRelay:
                 # TODO Follow this workflow to see if this is fully implemented
                 print(message)
             elif message == RelayMessageType.COUNT:
-                # TODO Handling COUNT similar to others for now. 
+                # TODO Handling COUNT similar to others for now.
                 # It might be exploring more as a one-off type of request, however.
                 self.message_pool.add_message(message, self.url)
 

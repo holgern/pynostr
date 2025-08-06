@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import unittest
 
 from pynostr.encrypted_dm import EncryptedDirectMessage
@@ -25,11 +26,11 @@ class TestFilters(unittest.TestCase):
                 content="Nice to see you here, pk1!",
                 tags=[
                     [
-                        'e',
+                        "e",
                         cls.pk1_thread[0].id,
                     ],  # Replies reference which note they're directly responding to
                     [
-                        'p',
+                        "p",
                         cls.pk1.public_key.hex(),
                     ],  # Replies reference who they're responding to
                 ],
@@ -41,13 +42,13 @@ class TestFilters(unittest.TestCase):
                 pubkey=cls.pk1.public_key.hex(),
                 content="Thanks! Glad you're here, too, pk2!",
                 tags=[
-                    ['e', cls.pk1_thread[0].id],  # Threads reference the original note
+                    ["e", cls.pk1_thread[0].id],  # Threads reference the original note
                     [
-                        'e',
+                        "e",
                         cls.pk1_thread[-1].id,
                     ],  # Replies reference which note they're directly responding to
                     [
-                        'p',
+                        "p",
                         cls.pk2.public_key.hex(),
                     ],  # Replies reference who they're responding to
                 ],
@@ -64,7 +65,7 @@ class TestFilters(unittest.TestCase):
             Event(
                 pubkey=cls.pk2.public_key.hex(),
                 content="So... I guess no one's following me.",
-                tags=[['e', cls.pk2_thread[0].id]],
+                tags=[["e", cls.pk2_thread[0].id]],
             )
         )
 
@@ -219,7 +220,7 @@ class TestFilters(unittest.TestCase):
     def test_match_by_arbitrary_single_letter_tag(self):
         """Should match NIP-12 arbitrary single-letter tags."""
         filters = Filters()
-        filters.add_arbitrary_tag('x', ["oranges"])
+        filters.add_arbitrary_tag("x", ["oranges"])
 
         # None of our Events match
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
@@ -229,7 +230,7 @@ class TestFilters(unittest.TestCase):
         event = Event(
             pubkey=self.pk1.public_key.hex(),
             content="Additional event to test with",
-            tags=[['x', "bananas"]],
+            tags=[["x", "bananas"]],
         )
         self.assertFalse(filters.matches(event))
 
@@ -237,21 +238,21 @@ class TestFilters(unittest.TestCase):
         event = Event(
             pubkey=self.pk1.public_key.hex(),
             content="Additional event to test with",
-            tags=[['x', "oranges"]],
+            tags=[["x", "oranges"]],
         )
         self.assertTrue(filters.matches(event))
 
         # Filter shouldn't care if there are other extraneous values
-        event.tags.append(['x', "pizza"])
+        event.tags.append(["x", "pizza"])
         self.assertTrue(filters.matches(event))
 
-        event.tags.append(['y', "honey badger"])
+        event.tags.append(["y", "honey badger"])
         self.assertTrue(filters.matches(event))
 
     def test_match_by_arbitrary_multi_letter_tag(self):
         """Should match any arbitrary multi-letter tag."""
         filters = Filters()
-        filters.add_arbitrary_tag('favorites', ["bitcoin"])
+        filters.add_arbitrary_tag("favorites", ["bitcoin"])
 
         # None of our Events match
         for event in self.pk1_thread + self.pk2_thread + self.pk1_pk2_dms:
@@ -261,7 +262,7 @@ class TestFilters(unittest.TestCase):
         event = Event(
             pubkey=self.pk1.public_key.hex(),
             content="Additional event to test with",
-            tags=[['favorites', "shitcoin"]],
+            tags=[["favorites", "shitcoin"]],
         )
         self.assertFalse(filters.matches(event))
 
@@ -269,15 +270,15 @@ class TestFilters(unittest.TestCase):
         event = Event(
             pubkey=self.pk1.public_key.hex(),
             content="Additional event to test with",
-            tags=[['favorites', "bitcoin"]],
+            tags=[["favorites", "bitcoin"]],
         )
         self.assertTrue(filters.matches(event))
 
         # Filter shouldn't care if there are other extraneous values
-        event.tags.append(['favorites', "sats"])
+        event.tags.append(["favorites", "sats"])
         self.assertTrue(filters.matches(event))
 
-        event.tags.append(['foo', "bar"])
+        event.tags.append(["foo", "bar"])
         self.assertTrue(filters.matches(event))
 
     def test_match_by_delegation_tag(self):
@@ -291,7 +292,7 @@ class TestFilters(unittest.TestCase):
         # Search just for the delegator's pubkey (only aspect of delegation search
         # that is supported this way)
         filters.add_arbitrary_tag(
-            'delegation',
+            "delegation",
             ["8e0d3d3eb2881ec137a11debe736a9086715a8c8beeeda615780064d68bc25dd"],
         )
 
@@ -305,7 +306,7 @@ class TestFilters(unittest.TestCase):
             content="Additional event to test with",
             tags=[
                 [
-                    'delegation',
+                    "delegation",
                     "some_other_delegators_pubkey",
                     "kind=1&created_at<1675721813",
                     "cbc49c65fe04a3181d72fb5a9f1c627e329d5f45d300a2dfed1c3e788b7834dad4"
@@ -321,7 +322,7 @@ class TestFilters(unittest.TestCase):
             content="Additional event to test with",
             tags=[
                 [
-                    'delegation',
+                    "delegation",
                     "8e0d3d3eb2881ec137a11debe736a9086715a8c8beeeda615780064d68bc25dd",
                     "kind=1&created_at<1675721813",
                     "cbc49c65fe04a3181d72fb5a9f1c627e329d5f45d300a2dfed1c3e788b7834dad4"
@@ -332,10 +333,10 @@ class TestFilters(unittest.TestCase):
         self.assertTrue(filters.matches(event))
 
         # Filter shouldn't care if there are other extraneous values
-        event.tags.append(['favorites', "sats"])
+        event.tags.append(["favorites", "sats"])
         self.assertTrue(filters.matches(event))
 
-        event.tags.append(['foo', "bar"])
+        event.tags.append(["foo", "bar"])
         self.assertTrue(filters.matches(event))
 
     def test_match_by_authors_and_kinds(self):
@@ -418,14 +419,14 @@ class TestFilters(unittest.TestCase):
     def test_arbitrary_single_letter_json(self):
         """Should prefix NIP-12 arbitrary single-letter tags with "#" in json."""
         filters = Filters()
-        filters.add_arbitrary_tag('x', ["oranges"])
+        filters.add_arbitrary_tag("x", ["oranges"])
         self.assertIn("#x", filters.to_dict().keys())
         self.assertNotIn("x", filters.to_dict().keys())
 
     def test_arbitrary_multi_letter_json(self):
         """Should include arbitrary multi-letter tags as-is in json."""
         filters = Filters()
-        filters.add_arbitrary_tag('foo', ["bar"])
+        filters.add_arbitrary_tag("foo", ["bar"])
         self.assertIn("foo", filters.to_dict().keys())
 
 

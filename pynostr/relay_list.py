@@ -2,7 +2,6 @@ import concurrent.futures
 import logging
 from dataclasses import dataclass, field
 from itertools import repeat
-from typing import List
 
 from .base_relay import BaseRelay, RelayPolicy
 from .utils import get_relay_information
@@ -12,7 +11,7 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class RelayList:
-    data: List[BaseRelay] = field(default_factory=list)
+    data: list[BaseRelay] = field(default_factory=list)
 
     def __len__(self):
         return len(self.data)
@@ -30,7 +29,7 @@ class RelayList:
         return item in self.data
 
     @classmethod
-    def from_dict(cls, msg: dict) -> 'RelayList':
+    def from_dict(cls, msg: dict) -> "RelayList":
         rl = RelayList()
         for url in msg:
             if (
@@ -51,11 +50,15 @@ class RelayList:
         if self.check_url(relay.url) and relay.url not in self.get_url_list():
             self.data.append(relay)
 
-    def append(self, url: str, policy: RelayPolicy = RelayPolicy()):
+    def append(self, url: str, policy: RelayPolicy = None):
+        if policy is None:
+            policy = RelayPolicy()
         if policy and self.check_url(url) and url not in self.get_url_list():
             self.data.append(BaseRelay(url, policy))
 
-    def append_url_list(self, url_list: List[str], policy: RelayPolicy = RelayPolicy()):
+    def append_url_list(self, url_list: list[str], policy: RelayPolicy = None):
+        if policy is None:
+            policy = RelayPolicy()
         for url in url_list:
             self.append(url, policy)
 

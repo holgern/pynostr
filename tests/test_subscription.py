@@ -33,7 +33,7 @@ class TestSubscription(unittest.TestCase):
         c_message_type, _c_subscription_id, _c_req_filters = count_received
 
         self.assertTrue(isinstance(subscription_id, str))
-        
+
         self.assertEqual(message_type, ClientMessageType.REQUEST)
         self.assertEqual(c_message_type, ClientMessageType.COUNT)
 

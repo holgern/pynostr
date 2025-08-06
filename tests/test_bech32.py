@@ -60,13 +60,13 @@ VALID_BECH32M = [
 
 INVALID_BECH32 = [
     " 1nwldj5",  # HRP character out of range
-    "\x7F" + "1axkwrx",  # HRP character out of range
+    "\x7f" + "1axkwrx",  # HRP character out of range
     "\x80" + "1eym55h",  # HRP character out of range
     "pzry9x0s0muk",  # No separator character
     "1pzry9x0s0muk",  # Empty HRP
     "x1b4n0q5v",  # Invalid data character
     "li1dgmt3",  # Too short checksum
-    "de1lg7wt" + "\xFF",  # Invalid character in checksum
+    "de1lg7wt" + "\xff",  # Invalid character in checksum
     "A1G7SGD8",  # checksum calculated with uppercase form of HRP
     "10a06t8",  # empty HRP
     "1qzzfhee",  # empty HRP
@@ -74,7 +74,7 @@ INVALID_BECH32 = [
 
 INVALID_BECH32M = [
     " 1xj0phk",  # HRP character out of range
-    "\x7F" + "1g6xzxy",  # HRP character out of range
+    "\x7f" + "1g6xzxy",  # HRP character out of range
     "\x80" + "1vctc34",  # HRP character out of range
     "qyrz8wqd2c9m",  # No separator character
     "1qyrz8wqd2c9m",  # Empty HRP
@@ -170,7 +170,7 @@ class TestSegwitAddress(unittest.TestCase):
             for test in tests:
                 hrp, _, dspec = segwit_addr.bech32_decode(test)
                 self.assertTrue(hrp is not None and dspec == spec)
-                pos = test.rfind('1')
+                pos = test.rfind("1")
                 test = test[: pos + 1] + chr(ord(test[pos + 1]) ^ 1) + test[pos + 2 :]
                 hrp, _, dspec = segwit_addr.bech32_decode(test)
                 self.assertIsNone(hrp)
@@ -189,7 +189,7 @@ class TestSegwitAddress(unittest.TestCase):
 
     def test_valid_address(self):
         """Test whether valid addresses decode to the correct output."""
-        for (address, hexscript) in VALID_ADDRESS:
+        for address, hexscript in VALID_ADDRESS:
             hrp = "bc"
             witver, witprog = segwit_addr.decode(hrp, address)
             if witver is None:

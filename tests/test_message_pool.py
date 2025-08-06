@@ -1,10 +1,10 @@
 import json
 import unittest
 import uuid
-import time
-from pynostr.event import Event, EventKind
+
+from pynostr.event import Event
 from pynostr.message_pool import MessagePool
-from pynostr.filters import FiltersList, Filters
+
 
 class TestMessagePool(unittest.TestCase):
     def test_empty_pool(self):

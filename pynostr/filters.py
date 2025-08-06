@@ -1,8 +1,9 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import json
 from collections import UserList
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from .event import Event, EventKind
 
@@ -30,25 +31,25 @@ class Filters:
     :param limit: int
     """
 
-    ids: Optional[List[str]] = None
-    kinds: Optional[List[EventKind]] = None
-    authors: Optional[List[str]] = None
+    ids: Optional[list[str]] = None
+    kinds: Optional[list[EventKind]] = None
+    authors: Optional[list[str]] = None
     since: Optional[int] = None
     until: Optional[int] = None
-    event_refs: Optional[
-        List[str]
-    ] = None  # the "#e" attr; list of event ids referenced in an "e" tag
-    pubkey_refs: Optional[
-        List[str]
-    ] = None  # The "#p" attr; list of pubkeys referenced in a "p" tag
+    event_refs: Optional[list[str]] = (
+        None  # the "#e" attr; list of event ids referenced in an "e" tag
+    )
+    pubkey_refs: Optional[list[str]] = (
+        None  # The "#p" attr; list of pubkeys referenced in a "p" tag
+    )
     limit: Optional[int] = None
 
     def __post_init__(self):
         self.tags = {}
         if self.event_refs:
-            self.add_arbitrary_tag('e', self.event_refs)
+            self.add_arbitrary_tag("e", self.event_refs)
         if self.pubkey_refs:
-            self.add_arbitrary_tag('p', self.pubkey_refs)
+            self.add_arbitrary_tag("p", self.pubkey_refs)
 
     def add_arbitrary_tag(self, tag: str, values: list):
         """Filter on any arbitrary tag with explicit handling for NIP-01 and NIP-12
@@ -80,9 +81,9 @@ class Filters:
             ret.limit = filters["limit"]
         cls.tags = {}
         if cls.event_refs:
-            cls.add_arbitrary_tag('e', cls.event_refs)
+            cls.add_arbitrary_tag("e", cls.event_refs)
         if cls.pubkey_refs:
-            cls.add_arbitrary_tag('p', cls.pubkey_refs)
+            cls.add_arbitrary_tag("p", cls.pubkey_refs)
         return ret
 
     def matches(self, event: Event) -> bool:
@@ -158,16 +159,16 @@ class Filters:
         return hash(self.to_dict())
 
     def __repr__(self):
-        return f'Filters({self.to_dict()})'
+        return f"Filters({self.to_dict()})"
 
     def __str__(self):
         return json.dumps(self.to_dict())
 
 
 class FiltersList(UserList):
-    def __init__(self, initlist: List[Filters] = None) -> None:
+    def __init__(self, initlist: list[Filters] = None) -> None:
         super().__init__(initlist)
-        self.data: List[Filters]
+        self.data: list[Filters]
 
     def match(self, event: Event):
         for filters in self.data:
@@ -190,7 +191,7 @@ class FiltersList(UserList):
         self.data.append(value)
 
     def __repr__(self):
-        return f'FilterList({self.to_json_array()})'
+        return f"FilterList({self.to_json_array()})"
 
     def __str__(self):
         return json.dumps(self.to_json_array())

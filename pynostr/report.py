@@ -10,11 +10,11 @@ log = logging.getLogger(__name__)
 
 
 class ReportType(str, Enum):
-    NUDITY = 'nudity'
-    PROFANITY = 'profanity'
-    ILLEGAL = 'illegal'
-    SPAM = 'spam'
-    IMPERSONATION = 'impersonation'
+    NUDITY = "nudity"
+    PROFANITY = "profanity"
+    ILLEGAL = "illegal"
+    SPAM = "spam"
+    IMPERSONATION = "impersonation"
 
 
 @dataclass

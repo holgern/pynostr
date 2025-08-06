@@ -24,11 +24,11 @@ class Subscription:
 
     def to_nip45_count_message(self) -> str:
         """
-            NIP-45: https://github.com/nostr-protocol/nips/blob/master/45.md
+        NIP-45: https://github.com/nostr-protocol/nips/blob/master/45.md
 
-            returns int
-            returns count of Events passing the set of Filters
-                    attached to a Subscription
+        returns int
+        returns count of Events passing the set of Filters
+                attached to a Subscription
         """
         message = [ClientMessageType.COUNT, self.id]
         message.extend(self.filtersList.to_json_array())

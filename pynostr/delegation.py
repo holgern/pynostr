@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import time
 from dataclasses import dataclass
 from typing import Optional

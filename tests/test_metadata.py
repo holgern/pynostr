@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import unittest
 
 from pynostr.event import Event, EventKind
@@ -14,7 +15,7 @@ class TestMetadata(unittest.TestCase):
 
     def test_dict_roundtrip(self):
         event = Event(
-            content='test event',
+            content="test event",
             created_at=12345678,
             kind=1,
         )

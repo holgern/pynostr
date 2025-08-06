@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from .event import Event, EventKind
 from .key import PublicKey
@@ -24,7 +24,7 @@ class MetadataIdentity:
     proof: str
 
     @classmethod
-    def from_list(cls, lst: list) -> 'MetadataIdentity':
+    def from_list(cls, lst: list) -> "MetadataIdentity":
         return MetadataIdentity(
             claim_type=lst[0].split(":")[0], identity=lst[0].split(":")[1], proof=lst[1]
         )
@@ -46,7 +46,7 @@ class Metadata(Event):
     display_name: Optional[str] = None
     website: Optional[str] = None
     addional: Optional[dict] = None
-    identities: Optional[List[MetadataIdentity]] = None
+    identities: Optional[list[MetadataIdentity]] = None
 
     def __post_init__(self):
         Event.__post_init__(self)
@@ -55,15 +55,15 @@ class Metadata(Event):
             self.identities = []
 
     @classmethod
-    def from_dict(cls, msg: dict) -> 'Metadata':
+    def from_dict(cls, msg: dict) -> "Metadata":
         # "id" is ignore, as it will be computed from the contents
         m = Metadata(
-            content=msg['content'],
-            pubkey=msg['pubkey'],
-            created_at=msg['created_at'],
+            content=msg["content"],
+            pubkey=msg["pubkey"],
+            created_at=msg["created_at"],
             kind=EventKind.SET_METADATA,
-            tags=msg['tags'],
-            sig=msg['sig'],
+            tags=msg["tags"],
+            sig=msg["sig"],
         )
         if m.content is not None and bool(m.content.strip()):
             m.set_metadata(json.loads(m.content))
@@ -71,15 +71,15 @@ class Metadata(Event):
         return m
 
     @classmethod
-    def from_event(cls, event: Event) -> 'Metadata':
+    def from_event(cls, event: Event) -> "Metadata":
         event_dict = event.to_dict()
         m = Metadata(
-            content=event_dict['content'],
-            pubkey=event_dict['pubkey'],
-            created_at=event_dict['created_at'],
+            content=event_dict["content"],
+            pubkey=event_dict["pubkey"],
+            created_at=event_dict["created_at"],
             kind=EventKind.SET_METADATA,
-            tags=event_dict['tags'],
-            sig=event_dict['sig'],
+            tags=event_dict["tags"],
+            sig=event_dict["sig"],
         )
         if (
             m.content is not None
@@ -112,7 +112,7 @@ class Metadata(Event):
         return Event.from_dict(self.to_dict())
 
     @classmethod
-    def from_nip05(cls, nip05: str) -> 'Metadata':
+    def from_nip05(cls, nip05: str) -> "Metadata":
         m = Metadata()
         m.nip05 = nip05
         try:
@@ -124,7 +124,7 @@ class Metadata(Event):
         return m
 
     @classmethod
-    def from_npub(cls, npub: str) -> 'Metadata':
+    def from_npub(cls, npub: str) -> "Metadata":
         m = Metadata()
         m.pubkey = PublicKey.from_npub(npub).hex()
         return m

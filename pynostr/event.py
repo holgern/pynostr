@@ -1,4 +1,5 @@
 """Inspired by event.py from https://github.com/jeffthibault/python-nostr.git."""
+
 import binascii
 import datetime
 import json
@@ -6,7 +7,7 @@ import time
 from dataclasses import dataclass
 from enum import IntEnum
 from hashlib import sha256
-from typing import List, Optional
+from typing import Optional
 
 from .key import PrivateKey, PublicKey
 from .message_type import ClientMessageType
@@ -54,7 +55,7 @@ class Event:
     pubkey: Optional[str] = None
     created_at: Optional[int] = None
     kind: Optional[int] = EventKind.TEXT_NOTE
-    tags: List[List[str]] = None
+    tags: list[list[str]] = None  # type: ignore
     id: Optional[str] = None
     sig: Optional[str] = None
 
@@ -73,7 +74,7 @@ class Event:
 
     def serialize(self) -> bytes:
         data = [0, self.pubkey, self.created_at, self.kind, self.tags, self.content]
-        data_str = json.dumps(data, separators=(',', ':'), ensure_ascii=False)
+        data_str = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
         return data_str.encode()
 
     def compute_id(self):
@@ -88,15 +89,15 @@ class Event:
         return hash(self.id)
 
     @classmethod
-    def from_dict(cls, msg: dict) -> 'Event':
+    def from_dict(cls, msg: dict) -> "Event":
         # "id" is ignore, as it will be computed from the contents
         return Event(
-            content=msg['content'],
-            pubkey=msg['pubkey'],
-            created_at=msg['created_at'],
-            kind=msg['kind'],
-            tags=msg['tags'],
-            sig=msg['sig'],
+            content=msg["content"],
+            pubkey=msg["pubkey"],
+            created_at=msg["created_at"],
+            kind=msg["kind"],
+            tags=msg["tags"],
+            sig=msg["sig"],
         )
 
     def add_tag(self, tag_type: str, tag_content):
@@ -127,18 +128,18 @@ class Event:
 
     def add_pubkey_ref(self, pubkey: str):
         """Adds a reference to a pubkey as a 'p' tag."""
-        self.add_tag('p', pubkey)
+        self.add_tag("p", pubkey)
 
     def has_pubkey_ref(self, pubkey: str):
-        return self.has_tag('p', pubkey)
+        return self.has_tag("p", pubkey)
 
     def add_event_ref(self, event_id: str):
         """Adds a reference to an event_id as an 'e' tag."""
-        self.add_tag('e', event_id)
+        self.add_tag("e", event_id)
 
     def has_event_ref(self, event_id: str):
         """Check if a e tag to the given event_id exists."""
-        return self.has_tag('e', event_id)
+        return self.has_tag("e", event_id)
 
     def get_tag_dict(self):
         """Returns all tags as dict."""
@@ -148,7 +149,7 @@ class Event:
             ret[t] = self.get_tag_list(tag_type=t)
         return ret
 
-    def get_tag_list(self, tag_type: str = 'e'):
+    def get_tag_list(self, tag_type: str = "e"):
         """Returns all tags of given type as list."""
         ret = []
         for tag in self.tags:
@@ -168,7 +169,7 @@ class Event:
                 ret.append(tag[0])
         return ret
 
-    def get_tag_count(self, tag_type: str = 'e'):
+    def get_tag_count(self, tag_type: str = "e"):
         """Returns all tags of given type as list."""
         count = 0
         for tag in self.tags:
@@ -182,6 +183,7 @@ class Event:
         :return: note id as bech32 encoding with note prefix
         """
         self.compute_id()
+        assert self.id is not None, "Event ID should not be None after compute_id()"
         return bech32_encode(binascii.unhexlify(self.id), prefix)
 
     def sign(self, private_key_hex: str) -> None:
@@ -195,15 +197,28 @@ class Event:
         sk = PrivateKey(bytes.fromhex(private_key_hex))
         self.pubkey = sk.public_key.hex()
         self.compute_id()
+        assert self.id is not None, "Event ID should not be None after compute_id()"
         sig = sk.sign(bytes.fromhex(self.id))
-        self.sig = sig.hex()
+        # Handle sig being either bytes or str
+        if isinstance(sig, bytes):
+            self.sig = sig.hex()
+        else:
+            self.sig = sig
 
     def verify(self) -> bool:
+        assert (
+            self.pubkey is not None
+        ), "Event pubkey should not be None for verification"
         pub_key = PublicKey.from_hex(self.pubkey)
         self.compute_id()
+        assert self.id is not None, "Event ID should not be None after compute_id()"
+        assert (
+            self.sig is not None
+        ), "Event signature should not be None for verification"
         return pub_key.verify(bytes.fromhex(self.sig), bytes.fromhex(self.id))
 
     def date_time(self):
+        assert self.created_at is not None, "Event created_at should not be None"
         return datetime.datetime.utcfromtimestamp(self.created_at)
 
     def to_dict(self) -> dict:
@@ -226,7 +241,9 @@ class Event:
         )
 
     def __repr__(self):
-        return f'Event({self.id[:10]}...{self.id[-10:]})'
+        if self.id is None:
+            return "Event(id=None)"
+        return f"Event({self.id[:10]}...{self.id[-10:]})"
 
     def __str__(self):
         return self.to_message()

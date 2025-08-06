@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Optional
 
 from .base_relay import BaseRelay, RelayPolicy
 from .event import Event, EventKind
@@ -26,7 +26,7 @@ class Contact:
     pet_name: Optional[str] = None
 
     @classmethod
-    def from_list(cls, lst: list) -> 'Contact':
+    def from_list(cls, lst: list) -> "Contact":
         if len(lst) == 3:
             return Contact(pub_key=lst[0], relay=lst[1], pet_name=lst[2])
         elif len(lst) > 0:
@@ -50,7 +50,7 @@ class Contact:
 
 @dataclass
 class ContactList(Event):
-    contacts: List[Contact] = field(default_factory=list)
+    contacts: list[Contact] = field(default_factory=list)
     relays: RelayList = field(default_factory=RelayList)
 
     def __post_init__(self):
@@ -58,13 +58,13 @@ class ContactList(Event):
         self.kind = EventKind.CONTACTS
 
     @classmethod
-    def from_event(cls, event: Event) -> 'ContactList':
+    def from_event(cls, event: Event) -> "ContactList":
         if event.kind != EventKind.CONTACTS:
             return None
         event_dict = event.to_dict()
         cl = ContactList.from_dict(event_dict)
-        if event.get_tag_count('p') > 0:
-            for tag in event.get_tag_list('p'):
+        if event.get_tag_count("p") > 0:
+            for tag in event.get_tag_list("p"):
                 cl.contacts.append(Contact.from_list(tag))
         if event.content is not None:
             cl.relays = RelayList()
@@ -75,15 +75,15 @@ class ContactList(Event):
         return cl
 
     @classmethod
-    def from_dict(cls, msg: dict) -> 'ContactList':
+    def from_dict(cls, msg: dict) -> "ContactList":
         # "id" is ignore, as it will be computed from the contents
         cl = ContactList(
-            content=msg['content'],
-            pubkey=msg['pubkey'],
-            created_at=msg['created_at'],
+            content=msg["content"],
+            pubkey=msg["pubkey"],
+            created_at=msg["created_at"],
             kind=EventKind.SET_METADATA,
-            tags=msg['tags'],
-            sig=msg['sig'],
+            tags=msg["tags"],
+            sig=msg["sig"],
         )
         if cl.content is not None and bool(cl.content.strip()):
             try:

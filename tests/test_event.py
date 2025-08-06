@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import time
 import unittest
 
@@ -39,21 +40,24 @@ class TestEvent(unittest.TestCase):
 
     def test_event_default_time(self):
         public_key = PrivateKey().public_key.hex()
-        event1 = Event(pubkey=public_key, content='test event')
+        event1 = Event(pubkey=public_key, content="test event")
         time.sleep(1.5)
-        event2 = Event(pubkey=public_key, content='test event')
+        event2 = Event(pubkey=public_key, content="test event")
+        assert (
+            event1.created_at is not None and event2.created_at is not None
+        ), "Event created_at should not be None"
         self.assertTrue(event1.created_at < event2.created_at)
 
     def test_add_event_ref(self):
         some_event_id = "some_event_id"
         event = Event(content="Adding an 'e' tag")
         event.add_event_ref(some_event_id)
-        self.assertTrue(['e', some_event_id] in event.tags)
-        self.assertEqual(event.get_tag_count('e'), 1)
-        self.assertEqual(event.get_tag_count('p'), 0)
-        self.assertEqual(event.get_tag_list('e'), [[some_event_id]])
-        self.assertEqual(event.get_tag_list('p'), [])
-        self.assertEqual(event.get_tag_types(), ['e'])
+        self.assertTrue(["e", some_event_id] in event.tags)
+        self.assertEqual(event.get_tag_count("e"), 1)
+        self.assertEqual(event.get_tag_count("p"), 0)
+        self.assertEqual(event.get_tag_list("e"), [[some_event_id]])
+        self.assertEqual(event.get_tag_list("p"), [])
+        self.assertEqual(event.get_tag_types(), ["e"])
         self.assertEqual(event.get_tag_dict(), {"e": [[some_event_id]]})
         self.assertTrue(event.has_event_ref(some_event_id))
 
@@ -61,12 +65,12 @@ class TestEvent(unittest.TestCase):
         some_pubkey = "some_pubkey"
         event = Event(content="Adding a 'p' tag")
         event.add_pubkey_ref(some_pubkey)
-        self.assertTrue(['p', some_pubkey] in event.tags)
-        self.assertEqual(event.get_tag_count('p'), 1)
-        self.assertEqual(event.get_tag_count('e'), 0)
-        self.assertEqual(event.get_tag_list('p'), [[some_pubkey]])
-        self.assertEqual(event.get_tag_list('e'), [])
-        self.assertEqual(event.get_tag_types(), ['p'])
+        self.assertTrue(["p", some_pubkey] in event.tags)
+        self.assertEqual(event.get_tag_count("p"), 1)
+        self.assertEqual(event.get_tag_count("e"), 0)
+        self.assertEqual(event.get_tag_list("p"), [[some_pubkey]])
+        self.assertEqual(event.get_tag_list("e"), [])
+        self.assertEqual(event.get_tag_types(), ["p"])
         self.assertEqual(event.get_tag_dict(), {"p": [[some_pubkey]]})
         self.assertTrue(event.has_pubkey_ref(some_pubkey))
 
@@ -74,21 +78,21 @@ class TestEvent(unittest.TestCase):
         ident = ["a:b", "c"]
         event = Event(content="Adding a 'i' tag")
         event.add_tag("i", ident)
-        self.assertTrue((['i'] + ident) in event.tags)
-        self.assertEqual(event.get_tag_count('i'), 1)
-        self.assertEqual(event.get_tag_count('e'), 0)
-        self.assertEqual(event.get_tag_list('i'), [ident])
-        self.assertEqual(event.get_tag_list('e'), [])
-        self.assertEqual(event.get_tag_types(), ['i'])
+        self.assertTrue((["i"] + ident) in event.tags)
+        self.assertEqual(event.get_tag_count("i"), 1)
+        self.assertEqual(event.get_tag_count("e"), 0)
+        self.assertEqual(event.get_tag_list("i"), [ident])
+        self.assertEqual(event.get_tag_list("e"), [])
+        self.assertEqual(event.get_tag_types(), ["i"])
         self.assertEqual(event.get_tag_dict(), {"i": [ident]})
 
     def test_clear_tags(self):
         some_pubkey = "some_pubkey"
         some_event_id = "some_event_id"
         event = Event(content="Adding different tags")
-        event.add_tag('p', some_pubkey)
-        event.add_tag('e', some_event_id)
-        event.add_tag('i', ["a:b", "c"])
+        event.add_tag("p", some_pubkey)
+        event.add_tag("e", some_event_id)
+        event.add_tag("i", ["a:b", "c"])
         self.assertEqual(event.get_tag_count("p"), 1)
         self.assertEqual(event.get_tag_count("e"), 1)
         self.assertEqual(event.get_tag_count("i"), 1)
@@ -121,7 +125,7 @@ class TestEvent(unittest.TestCase):
     def test_dict_roundtrip(self):
         """Conversion to dict and back result in same object."""
         event = Event(
-            content='test event',
+            content="test event",
             created_at=12345678,
             kind=1,
         )

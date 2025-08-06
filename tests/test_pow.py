@@ -15,7 +15,7 @@ class TestPow(unittest.TestCase):
         """Test mining an event with specific difficulty."""
         public_key = PrivateKey().public_key.hex()
         difficulty = 8
-        event = Event(content='test', pubkey=public_key, kind=EventKind.TEXT_NOTE)
+        event = Event(content="test", pubkey=public_key, kind=EventKind.TEXT_NOTE)
         p = PowEvent(difficulty)
         self.assertFalse(p.check_difficulty(event))
         event = p.mine(event)
@@ -50,7 +50,7 @@ class TestPow(unittest.TestCase):
     def test_time_estimates(self):
         """Test functions to estimate POW time."""
         public_key = PrivateKey().public_key.hex()
-        event = Event(content='test', pubkey=public_key, kind=EventKind.TEXT_NOTE)
+        event = Event(content="test", pubkey=public_key, kind=EventKind.TEXT_NOTE)
         p = PowEvent(8)
         # test successful run of all estimators
         p.get_expected_time()
@@ -63,18 +63,18 @@ class TestPow(unittest.TestCase):
 
     def test_mine_vanity_key(self):
         """Test vanity key mining."""
-        pattern = '23'
+        pattern = "23"
         p = PowVanityKey(pattern)
         sk = p.mine()
         sk.public_key.bech32()
-        self.assertTrue(sk.public_key.bech32().startswith(f'npub1{pattern}'))
+        self.assertTrue(sk.public_key.bech32().startswith(f"npub1{pattern}"))
 
         p = PowVanityKey(suffix=pattern)
         sk = p.mine()
         self.assertTrue(sk.public_key.bech32().endswith(pattern))
 
         # mine an invalid pattern
-        pattern = '1'
+        pattern = "1"
 
         with self.assertRaisesRegex(ValueError, "not in valid list of bech32 chars"):
             p = PowVanityKey(pattern)

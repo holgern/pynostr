@@ -97,4 +97,3 @@ if __name__ == "__main__":
             table.add_row(str(identity.claim_type), str(identity.identity), str(identity.proof))  # Convert all to string
 
         console.print(table)
-

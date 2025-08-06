@@ -42,7 +42,7 @@ def get_nip05_response(name, url, timeout=1):
     request_url = f"https://{url}/.well-known/nostr.json?name={name}"
     try:
         response = requests.get(
-            request_url, headers={'User-Agent': 'pynostr'}, timeout=timeout
+            request_url, headers={"User-Agent": "pynostr"}, timeout=timeout
         )
 
         response.raise_for_status()
@@ -104,7 +104,7 @@ def get_public_key(identity_str: str):
 
 
 def get_relay_information(url: str, timeout: float = 2, add_url: bool = True):
-    headers = {'Accept': 'application/nostr+json', 'User-Agent': 'pynostr'}
+    headers = {"Accept": "application/nostr+json", "User-Agent": "pynostr"}
     if "wss" in url:
         metadata_uri = url.replace("wss", "https")
     elif "ws" in url:
@@ -154,7 +154,7 @@ def nprofile_encode(pubkey: str, relays: [str]):
 
     bytes_data = tlv8.encode(structure)
 
-    bytes_data = b''
+    bytes_data = b""
     for entry in structure:
         bytes_data += entry.encode()
     return bech32_encode(bytes_data, "nprofile")
@@ -174,7 +174,7 @@ def get_relay_list(relay_type="online", nip=None, timeout=5):
     :param relay_type: can be online, public, paid, offline or nip
     :param nip: is used when relay_type is set to nip
     """
-    headers = {'User-Agent': 'pynostr'}
+    headers = {"User-Agent": "pynostr"}
     url = f"https://api.nostr.watch/v1/{relay_type}"
     if nip is not None:
         url += f"/{nip}"

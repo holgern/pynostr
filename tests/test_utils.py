@@ -61,7 +61,7 @@ class TestUtils(unittest.TestCase):
         ]
         bytes_data = tlv8.encode(structure)
 
-        bytes_data = b''
+        bytes_data = b""
         for entry in structure:
             bytes_data += entry.encode()
 

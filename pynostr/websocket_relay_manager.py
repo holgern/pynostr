@@ -1,4 +1,5 @@
 """Forked from https://github.com/jeffthibault/python-nostr.git."""
+
 import json
 import threading
 import time
@@ -32,11 +33,12 @@ class WebSocketRelayManager:
     def add_relay(
         self,
         url: str,
-        policy: RelayPolicy = RelayPolicy(),
+        policy: RelayPolicy | None = None,
         ssl_options: dict = None,
         proxy_config: RelayProxyConnectionConfig = None,
     ):
-
+        if policy is None:
+            policy = RelayPolicy()
         relay = WebSocketRelay(
             url, self.message_pool, policy, ssl_options, proxy_config
         )
