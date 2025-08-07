@@ -38,7 +38,7 @@ class RelayManager:
     def add_relay(
         self,
         url: str,
-        policy: RelayPolicy | None = None,
+        policy: Optional[RelayPolicy] = None,
         timeout=2,
         close_on_eose: bool = True,
         message_callback=None,
@@ -166,7 +166,7 @@ class RelayManager:
             relay = self.relays[url]
             relay.close()
 
-    def open_connections(self, ssl_options: dict = None):
+    def open_connections(self, ssl_options: Optional[dict] = None):
         for relay in self.relays.values():
             if not relay.is_connected:
                 self.io_loop.add_callback(relay.start)

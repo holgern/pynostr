@@ -2,7 +2,7 @@
 
 import time
 from threading import Thread
-from typing import Union
+from typing import Optional, Union
 
 from websocket import WebSocketApp
 
@@ -15,8 +15,8 @@ class WebSocketRelay(BaseRelay):
         self,
         url: str,
         message_pool: MessagePool,
-        policy: RelayPolicy | None = None,
-        ssl_options: dict = None,
+        policy: Optional[RelayPolicy] = None,
+        ssl_options: Optional[dict] = None,
         proxy_config: Union[None, RelayProxyConnectionConfig] = None,
     ) -> None:
         if policy is None:

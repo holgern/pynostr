@@ -5,6 +5,7 @@ import threading
 import time
 from dataclasses import dataclass
 from threading import Lock
+from typing import Optional
 
 from .base_relay import RelayPolicy, RelayProxyConnectionConfig
 from .event import Event
@@ -33,9 +34,9 @@ class WebSocketRelayManager:
     def add_relay(
         self,
         url: str,
-        policy: RelayPolicy | None = None,
-        ssl_options: dict = None,
-        proxy_config: RelayProxyConnectionConfig = None,
+        policy: Optional[RelayPolicy] = None,
+        ssl_options: Optional[dict] = None,
+        proxy_config: Optional[RelayProxyConnectionConfig] = None,
     ):
         if policy is None:
             policy = RelayPolicy()

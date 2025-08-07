@@ -98,7 +98,12 @@ class ContactList(Event):
             pub_keys.append(contact.pub_key)
         return pub_keys
 
-    def add_contact(self, identity_str: str, relay: str = None, pet_name: str = None):
+    def add_contact(
+        self,
+        identity_str: str,
+        relay: Optional[str] = None,
+        pet_name: Optional[str] = None,
+    ):
         identity = get_public_key(identity_str)
         self.contacts.append(
             Contact(pub_key=identity.hex(), relay=relay, pet_name=pet_name)

@@ -52,8 +52,8 @@ class EncryptedDirectMessage:
     def encrypt(
         self,
         private_key_hex: str,
-        cleartext_content: str = None,
-        recipient_pubkey: str = None,
+        cleartext_content: Optional[str] = None,
+        recipient_pubkey: Optional[str] = None,
     ) -> None:
         if cleartext_content is not None:
             self.cleartext_content = cleartext_content
@@ -72,8 +72,8 @@ class EncryptedDirectMessage:
     def decrypt(
         self,
         private_key_hex: str,
-        encrypted_message: str = None,
-        public_key_hex: str = None,
+        encrypted_message: Optional[str] = None,
+        public_key_hex: Optional[str] = None,
     ) -> None:
         if encrypted_message is not None:
             self.encrypted_message = encrypted_message

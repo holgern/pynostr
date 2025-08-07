@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from tornado import gen
 from tornado.ioloop import IOLoop
@@ -16,7 +17,7 @@ class Relay(BaseRelay):
         url: str,
         message_pool: MessagePool,
         io_loop: IOLoop,
-        policy: RelayPolicy | None = None,
+        policy: Optional[RelayPolicy] = None,
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,

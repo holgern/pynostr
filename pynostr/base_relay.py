@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from queue import Queue
 from threading import Lock
+from typing import Optional
 
 from .event import Event
 from .filters import FiltersList
@@ -48,7 +49,7 @@ class BaseRelay:
         self,
         url: str,
         policy: RelayPolicy,
-        message_pool: MessagePool | None = None,
+        message_pool: Optional[MessagePool] = None,
         timeout: float = 2.0,
         close_on_eose: bool = True,
         message_callback=None,
@@ -88,7 +89,7 @@ class BaseRelay:
             ],
         }
 
-    def update_metadata(self, timeout: float = None) -> None:
+    def update_metadata(self, timeout: Optional[float] = None) -> None:
         if timeout is None:
             timeout = self.timeout
         self.metadata = get_relay_information(self.url, timeout=timeout, add_url=False)
@@ -118,7 +119,7 @@ class BaseRelay:
             # Get subscription
             subscription = self.subscriptions.get(subscription_id, None)
             if not subscription:
-                # TODO Determine whether or not to raise error or pass 
+                # TODO Determine whether or not to raise error or pass
                 # falsey value back to caller
                 raise ValueError(f"Subscription ID: {subscription_id} does not exist.")
             # TODO Determine how to handle this
